@@ -5,15 +5,22 @@ import (
 	"log"
 	"time"
 
+	"github.com/dtm-labs/dtm-cases/order/common"
 	"github.com/dtm-labs/dtm-cases/order/conf"
 	"github.com/dtm-labs/dtm-cases/order/service"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/logger"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql" // register mysql driver
+	"github.com/lithammer/shortuuid/v3"
 )
 
-// 事务参与者的服务地址
+func main() {
+	logger.InitLog("debug")
+	startSvr()
+	fireRequest(defaultReq())
+	time.Sleep(1000 * time.Second)
+}
 
 func startSvr() {
 	gin.SetMode(gin.ReleaseMode)
@@ -30,21 +37,41 @@ func addRoutes(app *gin.Engine) {
 	service.AddOrderRoute(app)
 	service.AddPayRoute(app)
 	service.AddStockRoute(app)
+	app.Any("/api/fireSucceed", common.WrapHandler(func(c *gin.Context) interface{} {
+		req := defaultReq()
+		return fireRequest(req)
+	}))
+	app.Any("/api/fireFailed", common.WrapHandler(func(c *gin.Context) interface{} {
+		req := defaultReq()
+		req.ProductCount = 1000
+		return fireRequest(req)
+	}))
+	app.Any("/api/fireFailedCoupon", common.WrapHandler(func(c *gin.Context) interface{} {
+		req := defaultReq()
+		req.CouponID = 101
+		return fireRequest(req)
+	}))
 }
 
-func main() {
-	logger.InitLog("debug")
-	startSvr()
-	fireRequest()
-	time.Sleep(1000 * time.Second)
+func defaultReq() *common.Req {
+	return &common.Req{
+		UserID:       1,
+		OrderID:      shortuuid.New(),
+		ProductID:    1,
+		ProductCount: 1,
+		CouponID:     0,
+		Amount:       100,
+	}
 }
 
-func fireRequest() {
-	resp, err := dtmcli.GetRestyClient().R().Post(conf.BusiUrl + "/fireRequest")
+func fireRequest(req *common.Req) interface{} {
+	resty := dtmcli.GetRestyClient()
+	resp, err := resty.R().SetBody(req).Post(conf.BusiUrl + "/submitOrder")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	if resp.IsError() {
-		panic(resp.Error())
+		return resp.Error()
 	}
+	return &req
 }
