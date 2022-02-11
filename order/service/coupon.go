@@ -27,7 +27,7 @@ func AddCouponRoute(app *gin.Engine) {
 			return err
 		})
 	}))
-	app.POST("/api/busi/couponUseRevert", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST("/api/busi/couponUseRevert", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
 		if req.CouponID == 0 { // no coupon to use, so return
 			return nil
