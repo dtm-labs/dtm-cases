@@ -4,13 +4,14 @@ import (
 	"database/sql"
 
 	"github.com/dtm-labs/dtm-cases/order/common"
+	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/dtmimp"
 	"github.com/gin-gonic/gin"
 )
 
 func AddStockRoute(app *gin.Engine) {
-	app.POST("/api/busi/stockDeduct", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST("/api/busi/stockDeduct", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
 		return common.MustBarrierFrom(c).CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			affected, err := dtmimp.DBExec(tx,
@@ -22,7 +23,7 @@ func AddStockRoute(app *gin.Engine) {
 			return err
 		})
 	}))
-	app.POST("/api/busi/stockDeductRevert", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST("/api/busi/stockDeductRevert", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
 		return common.MustBarrierFrom(c).CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,

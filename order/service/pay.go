@@ -4,12 +4,13 @@ import (
 	"database/sql"
 
 	"github.com/dtm-labs/dtm-cases/order/common"
+	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli/dtmimp"
 	"github.com/gin-gonic/gin"
 )
 
 func AddPayRoute(app *gin.Engine) {
-	app.POST("/api/busi/payCreate", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST("/api/busi/payCreate", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
@@ -19,7 +20,7 @@ func AddPayRoute(app *gin.Engine) {
 			return err
 		})
 	}))
-	app.POST("/api/busi/payCreateRevert", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST("/api/busi/payCreateRevert", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {

@@ -8,6 +8,7 @@ import (
 	"github.com/dtm-labs/dtm-cases/order/common"
 	"github.com/dtm-labs/dtm-cases/order/conf"
 	"github.com/dtm-labs/dtm-cases/order/service"
+	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/logger"
 	"github.com/gin-gonic/gin"
@@ -37,16 +38,16 @@ func addRoutes(app *gin.Engine) {
 	service.AddOrderRoute(app)
 	service.AddPayRoute(app)
 	service.AddStockRoute(app)
-	app.Any("/api/fireSucceed", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.Any("/api/fireSucceed", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := defaultReq()
 		return fireRequest(req)
 	}))
-	app.Any("/api/fireFailed", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.Any("/api/fireFailed", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := defaultReq()
 		req.ProductCount = 1000
 		return fireRequest(req)
 	}))
-	app.Any("/api/fireFailedCoupon", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.Any("/api/fireFailedCoupon", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := defaultReq()
 		req.CouponID = 101
 		return fireRequest(req)

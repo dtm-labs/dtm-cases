@@ -4,12 +4,13 @@ import (
 	"database/sql"
 
 	"github.com/dtm-labs/dtm-cases/order/common"
+	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli/dtmimp"
 	"github.com/gin-gonic/gin"
 )
 
 func AddOrderRoute(app *gin.Engine) {
-	app.POST("/api/busi/orderCreate", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST("/api/busi/orderCreate", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
@@ -19,7 +20,7 @@ func AddOrderRoute(app *gin.Engine) {
 			return err
 		})
 	}))
-	app.POST("/api/busi/orderCreateRevert", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST("/api/busi/orderCreateRevert", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {

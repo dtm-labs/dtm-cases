@@ -4,13 +4,14 @@ import (
 	"database/sql"
 
 	"github.com/dtm-labs/dtm-cases/order/common"
+	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/dtmimp"
 	"github.com/gin-gonic/gin"
 )
 
 func AddCouponRoute(app *gin.Engine) {
-	app.POST("/api/busi/couponUse", common.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST("/api/busi/couponUse", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
 		if req.CouponID == 0 { // no coupon to use, so return
 			return nil
