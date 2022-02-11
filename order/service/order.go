@@ -14,7 +14,7 @@ func AddOrderRoute(app *gin.Engine) {
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
-				"insert into busi.order1(user_id, order_id, product_id, amount, status) values(?,?,?,?,'PAYING')",
+				"insert into ord.order1(user_id, order_id, product_id, amount, status) values(?,?,?,?,'PAYING')",
 				req.UserID, req.OrderID, req.ProductID, req.Amount)
 			return err
 		})
@@ -24,7 +24,7 @@ func AddOrderRoute(app *gin.Engine) {
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
-				"update busi.order1 set status='FAILED', update_time=now() where order_id=?",
+				"update ord.order1 set status='FAILED', update_time=now() where order_id=?",
 				req.OrderID)
 			return err
 		})

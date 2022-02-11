@@ -8,9 +8,9 @@ import (
 
 var DBConf = dtmcli.DBConf{
 	Driver:   "mysql",
-	Host:     "localhost",
-	User:     "root",
-	Password: "",
+	Host:     "dtm.pub",
+	User:     "dtm",
+	Password: "passwd123dtm",
 	Port:     3306,
 }
 

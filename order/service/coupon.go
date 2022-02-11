@@ -18,7 +18,7 @@ func AddCouponRoute(app *gin.Engine) {
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			affected, err := dtmimp.DBExec(tx,
-				"update busi.user_coupon set used=1, update_time=now() where used=0 and use_id=? and coupon_id=?",
+				"update ord.user_coupon set used=1, update_time=now() where used=0 and use_id=? and coupon_id=?",
 				req.UserID, req.CouponID)
 			if err == nil && affected == 0 {
 				return dtmcli.ErrFailure // update coupon use failed, return failure to rollback
@@ -34,7 +34,7 @@ func AddCouponRoute(app *gin.Engine) {
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
-				"update busi.user_coupon set used=0, update_time=now() where used=1 and use_id=? and coupon_id=?",
+				"update ord.user_coupon set used=0, update_time=now() where used=1 and use_id=? and coupon_id=?",
 				req.UserID, req.CouponID)
 			return err
 		})

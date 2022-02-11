@@ -18,8 +18,8 @@ import (
 func main() {
 	logger.InitLog("debug")
 	startSvr()
-	fireRequest(defaultReq())
-	time.Sleep(1000 * time.Second)
+	// fireRequest(defaultReq())
+	select {}
 }
 
 func startSvr() {

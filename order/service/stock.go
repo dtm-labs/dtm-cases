@@ -14,7 +14,7 @@ func AddStockRoute(app *gin.Engine) {
 		req := common.MustGetReq(c)
 		return common.MustBarrierFrom(c).CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			affected, err := dtmimp.DBExec(tx,
-				"update busi.stock set stock=stock-?, update_time=now() where product_id=? and stock >= ?",
+				"update ord.stock set stock=stock-?, update_time=now() where product_id=? and stock >= ?",
 				req.ProductCount, req.ProductID, req.ProductCount)
 			if err == nil && affected == 0 {
 				return dtmcli.ErrFailure // not enough stock, return Failure to rollback
@@ -26,7 +26,7 @@ func AddStockRoute(app *gin.Engine) {
 		req := common.MustGetReq(c)
 		return common.MustBarrierFrom(c).CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
-				"update busi.stock set stock=stock+?, update_time=now() where product_id=?",
+				"update ord.stock set stock=stock+?, update_time=now() where product_id=?",
 				req.ProductCount, req.ProductID)
 			return err
 		})

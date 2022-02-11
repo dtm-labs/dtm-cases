@@ -14,7 +14,7 @@ func AddPayRoute(app *gin.Engine) {
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
-				"insert into busi.pay(user_id, order_id, amount, status) values(?,?,?,'CREATED')",
+				"insert into ord.pay(user_id, order_id, amount, status) values(?,?,?,'CREATED')",
 				req.UserID, req.OrderID, req.Amount)
 			return err
 		})
@@ -24,7 +24,7 @@ func AddPayRoute(app *gin.Engine) {
 		bb := common.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
-				"update busi.pay set status='CANCELED', update_time=now() where order_id=?",
+				"update ord.pay set status='CANCELED', update_time=now() where order_id=?",
 				req.OrderID)
 			return err
 		})
