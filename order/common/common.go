@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/dtm-labs/dtm-cases/order/conf"
-	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/dtmimp"
 	"github.com/gin-gonic/gin"
 )
@@ -45,12 +44,4 @@ func MustGetReq(c *gin.Context) *Req {
 		panic("product_id not specified")
 	}
 	return &req
-}
-
-func MustBarrierFrom(c *gin.Context) *dtmcli.BranchBarrier {
-	bb, err := dtmcli.BarrierFromQuery(c.Request.URL.Query())
-	if err != nil {
-		panic(err)
-	}
-	return bb
 }

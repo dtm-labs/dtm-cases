@@ -38,3 +38,11 @@ func WrapHandler(fn func(*gin.Context) interface{}) gin.HandlerFunc {
 		c.JSON(status, ret)
 	}
 }
+
+func MustBarrierFrom(c *gin.Context) *dtmcli.BranchBarrier {
+	bb, err := dtmcli.BarrierFromQuery(c.Request.URL.Query())
+	if err != nil {
+		panic(err)
+	}
+	return bb
+}

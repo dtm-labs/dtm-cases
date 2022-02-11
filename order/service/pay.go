@@ -12,7 +12,7 @@ import (
 func AddPayRoute(app *gin.Engine) {
 	app.POST("/api/busi/payCreate", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
-		bb := common.MustBarrierFrom(c)
+		bb := utils.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
 				"insert into ord.pay(user_id, order_id, amount, status) values(?,?,?,'CREATED')",
@@ -22,7 +22,7 @@ func AddPayRoute(app *gin.Engine) {
 	}))
 	app.POST("/api/busi/payCreateRevert", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
-		bb := common.MustBarrierFrom(c)
+		bb := utils.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
 				"update ord.pay set status='CANCELED', update_time=now() where order_id=?",

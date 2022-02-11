@@ -13,7 +13,7 @@ import (
 func AddStockRoute(app *gin.Engine) {
 	app.POST("/api/busi/stockDeduct", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
-		return common.MustBarrierFrom(c).CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
+		return utils.MustBarrierFrom(c).CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			affected, err := dtmimp.DBExec(tx,
 				"update ord.stock set stock=stock-?, update_time=now() where product_id=? and stock >= ?",
 				req.ProductCount, req.ProductID, req.ProductCount)
@@ -25,7 +25,7 @@ func AddStockRoute(app *gin.Engine) {
 	}))
 	app.POST("/api/busi/stockDeductRevert", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := common.MustGetReq(c)
-		return common.MustBarrierFrom(c).CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
+		return utils.MustBarrierFrom(c).CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
 				"update ord.stock set stock=stock+?, update_time=now() where product_id=?",
 				req.ProductCount, req.ProductID)

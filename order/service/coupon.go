@@ -16,7 +16,7 @@ func AddCouponRoute(app *gin.Engine) {
 		if req.CouponID == 0 { // no coupon to use, so return
 			return nil
 		}
-		bb := common.MustBarrierFrom(c)
+		bb := utils.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			affected, err := dtmimp.DBExec(tx,
 				"update ord.user_coupon set used=1, update_time=now() where used=0 and use_id=? and coupon_id=?",
@@ -32,7 +32,7 @@ func AddCouponRoute(app *gin.Engine) {
 		if req.CouponID == 0 { // no coupon to use, so return
 			return nil
 		}
-		bb := common.MustBarrierFrom(c)
+		bb := utils.MustBarrierFrom(c)
 		return bb.CallWithDB(common.DBGet(), func(tx *sql.Tx) error {
 			_, err := dtmimp.DBExec(tx,
 				"update ord.user_coupon set used=0, update_time=now() where used=1 and use_id=? and coupon_id=?",
