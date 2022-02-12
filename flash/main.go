@@ -72,7 +72,7 @@ func addRoutes(app *gin.Engine) {
 		gid := "{a}-" + shortuuid.New() // gid should contain same {a} as stockKey, so that the data will be in same redis slot
 		msg := dtmcli.NewMsg(DtmServer, gid).
 			Add(BusiUrl+"/createOrder", nil)
-		msg.TimeoutToFail = 10
+		msg.TimeoutToFail = 3
 		return msg.DoAndSubmit(BusiUrl+"/redisQueryPrepared", func(bb *dtmcli.BranchBarrier) error {
 			bb.RedisCheckAdjustAmount(rdb, stockKey, -1, 86400)
 			select {} // mock crash
