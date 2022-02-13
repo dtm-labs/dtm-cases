@@ -31,12 +31,12 @@ func addDelayDelete(app *gin.Engine) {
 	}))
 	app.GET(BusiAPI+"/delayDeleteCases", utils.WrapHandler(func(c *gin.Context) interface{} {
 		k := "key1"
-		intv := 1
+		intv := 0
 		value := "value1"
 		getData1 := func() (string, error) {
 			logger.Infof("get Data used 1s")
-			value = fmt.Sprintf("value%d", intv)
 			intv++
+			value = fmt.Sprintf("value%d", intv)
 			v := value
 			time.Sleep(1 * time.Second)
 			return v, nil
@@ -82,21 +82,18 @@ func addDelayDelete(app *gin.Engine) {
 		logger.FatalfIf(used > 0, "case-delayDelete: expect 0, but got %d", used)
 
 		// case-delayDeleteQuery3: data already replaced by new data
-		time.Sleep(1 * time.Second)
+		time.Sleep(1200 * time.Millisecond)
 		v, used = obtain()
 		logger.FatalfIf(v != value, "case-delayDeleteQuery3: expect %s, but got %s", value, v)
 		logger.FatalfIf(used > 0, "case-delayDeleteQuery3: expect 0, but got %d", used)
 
 		// case-delayDeleteVersionBug
-		dc = delay.NewClient(rdb, 3) // make value key expire in 3s. which is less than getData2.
 		err = dc.Delete(k)
 		logger.FatalIfError(err)
-		go func() {
-			v, err := dc.Obtain(k, 86400, 4, getData2)
-			logger.FatalIfError(err)
-			logger.FatalfIf(v != "value2", "case-delayDeleteVersionBugFirstObtain: expect %s, but got %s", "value2", v)
-		}()
-		time.Sleep(200 * time.Millisecond)
+		v, err = dc.Obtain(k, 86400, 4, getData2)
+		logger.FatalIfError(err)
+		logger.FatalfIf(v != "value2", "case-delayDeleteVersionBugFirstObtain: expect %s, but got %s", "value2", v)
+		time.Sleep(200 * time.Millisecond) // wait for getData2 to finish intv update
 		err = dc.Delete(k)
 		logger.FatalIfError(err)
 		v, used = obtain()
@@ -104,8 +101,9 @@ func addDelayDelete(app *gin.Engine) {
 		time.Sleep(4 * time.Second)
 		v, used = obtain()
 		logger.FatalfIf(v != "value3", "case-delayDeleteVersionBugSecondObtain: expect %s, but got %s", "value3", v)
-		logger.Infof("finally, intv is: %d, but value in cache is: %s, they are not matched", intv, v)
-		return v
+		msg := fmt.Sprintf("finally, value is: %s, but value in cache is: %s, they are not matched", value, v)
+		logger.Infof(msg)
+		return msg
 	}))
 
 }
