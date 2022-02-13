@@ -37,6 +37,13 @@ func verGetData1() (int, string, error) {
 	return ver, v, nil
 }
 
+func getData2() (string, error) {
+	r, err := getData1()
+	logger.Infof("get Data sleeping 3s")
+	time.Sleep(3 * time.Second)
+	return r, err
+}
+
 func verGetData2() (int, string, error) {
 	ver, r, err := verGetData1()
 	logger.Infof("get Data sleeping 3s")
@@ -65,7 +72,6 @@ func addVersionDelayDelete(app *gin.Engine) {
 		v, err = dc.Obtain(k, 86400, 4, getData2)
 		logger.FatalIfError(err)
 		logger.FatalfIf(v != expected, "case-delayDeleteVersionBugFirstObtain: expect %s, but got %s", expected, v)
-		time.Sleep(200 * time.Millisecond) // wait for getData2 to finish intv update
 		updateValue("value3")
 		logger.FatalIfError(err)
 		v, _ = obtain()
@@ -92,7 +98,6 @@ func addVersionDelayDelete(app *gin.Engine) {
 		v, err = vdc.Obtain(k, 86400, 4, verGetData2)
 		logger.FatalIfError(err)
 		logger.FatalfIf(v != expected, "case-delayDeleteVersionBugFirstObtain: expect %s, but got %s", expected, v)
-		time.Sleep(200 * time.Millisecond) // wait for getData2 to finish intv update
 		verUpdateValue(3, "value3")
 		logger.FatalIfError(err)
 		v, _ = verObtain()

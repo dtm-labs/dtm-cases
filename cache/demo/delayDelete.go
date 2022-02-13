@@ -2,7 +2,6 @@ package demo
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/dtm-labs/dtm-cases/cache/delay"
@@ -34,13 +33,6 @@ func getData1() (string, error) {
 	logger.Infof("get Data sleeping 1s")
 	time.Sleep(1 * time.Second)
 	return v, nil
-}
-
-func getData2() (string, error) {
-	r, err := getData1()
-	logger.Infof("get Data sleeping 3s")
-	time.Sleep(3 * time.Second)
-	return r, err
 }
 
 func obtain() (result string, used int) {
@@ -114,25 +106,7 @@ func addDelayDelete(app *gin.Engine) {
 		logger.FatalfIf(v != expected, "case-delayDeleteQuery3: expect %s, but got %s", expected, v)
 		logger.FatalfIf(used > 0, "case-delayDeleteQuery3: expect 0, but got %d", used)
 
-		// case-delayDeleteVersionBug
-		err = dc.Delete(k)
-		logger.FatalIfError(err)
-		updateValue("value3")
-		v, err = dc.Obtain(k, 86400, 4, getData2)
-		logger.FatalIfError(err)
-		logger.FatalfIf(v != expected, "case-delayDeleteVersionBugFirstObtain: expect %s, but got %s", expected, v)
-		time.Sleep(200 * time.Millisecond) // wait for getData2 to finish intv update
-		updateValue("value4")
-		logger.FatalIfError(err)
-		v, used = obtain()
-		logger.FatalfIf(v != expected, "case-delayDeleteVersionBugSecondObtain: expect %s, but got %s", expected, v)
-		time.Sleep(4 * time.Second)
-		expected = "value3"
-		v, used = obtain()
-		logger.FatalfIf(v != expected, "case-delayDeleteVersionBugSecondObtain: expect %s, but got %s", expected, v)
-		msg := fmt.Sprintf("finally, value is: %s, but value in cache is: %s, they are not matched", "value4", v)
-		logger.Infof(msg)
-		return msg
+		return "finished"
 	}))
 
 }
