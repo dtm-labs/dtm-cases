@@ -64,4 +64,5 @@ func addRoutes(app *gin.Engine) {
 	addConsistencyRoute(app)
 	addDelayDelete(app)
 	addStringConsistency(app)
+	addVersionDelayDelete(app)
 }
