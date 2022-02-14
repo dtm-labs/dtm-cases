@@ -7,19 +7,19 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type VersionClient struct {
+type StrongClient struct {
 	c *Client
 }
 
-func NewVersionClient(rdb *redis.Client, delay int64) *VersionClient {
-	return &VersionClient{c: NewClient(rdb, delay)}
+func NewVersionClient(rdb *redis.Client, delay int64) *StrongClient {
+	return &StrongClient{c: NewClient(rdb, delay)}
 }
 
-func (s *VersionClient) Delete(key string) error {
+func (s *StrongClient) Delete(key string) error {
 	return s.c.Delete(key)
 }
 
-func (s *VersionClient) Obtain(key string, expire int, maxCalTime int64, fn func() (int, string, error)) (string, error) {
+func (s *StrongClient) Obtain(key string, expire int, maxCalTime int64, fn func() (int, string, error)) (string, error) {
 	c := s.c
 	redisGet := func() ([]interface{}, error) {
 		res, err := callLua(c.rdb, ` -- delay.Obtain
