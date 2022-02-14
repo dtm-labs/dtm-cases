@@ -46,4 +46,3 @@ Obtain函数用于获取数据，参数介绍如下：
 - case-delayDeleteQuery1：数据存在，但是已经被延迟删除，此时会启动异步协程去计算新结果，并立即返回缓存中的旧值
 - case-delayDeleteQuery2：数据存在，但是已经被延迟删除，并且被锁，此时不会计算新结果，只会立即返回缓存中的旧值
 - case-delayDeleteQuery3：数据存在，Query1中的协程已计算出新结果，并更新到缓存，返回缓存中的新值
-- case-delayDeleteVersionBug：演示极端情况出现不一致情况，触发问题的条件，详见[缓存应用](https://dtm.pub/app/cache.html)

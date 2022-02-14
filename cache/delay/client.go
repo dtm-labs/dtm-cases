@@ -98,7 +98,7 @@ func (c *Client) Obtain(key string, expire int, maxCalTime int64, fn func() (str
 		}
 		_, err = callLua(c.rdb, `-- delay.Set
 	local o = redis.call('HGET', KEYS[1], 'lockOwner')
-	if o ~= false and o ~= ARGV[2] then
+	if o ~= ARGV[2] then
 			return
 	end
 	redis.call('HSET', KEYS[1], 'value', ARGV[1])
