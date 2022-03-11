@@ -1,11 +1,15 @@
 package demo
 
 import (
+	"database/sql"
 	"time"
 
+	"github.com/dtm-labs/dtm-cases/cache/delay"
 	"github.com/dtm-labs/dtm-cases/utils"
+	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/lithammer/shortuuid"
 )
 
 func checkStatusCompatible(opSwitch string, doCache bool) {
@@ -23,21 +27,34 @@ func strongWrite(value string, confWriteCache string, writeCache bool) {
 		updateDB(value)
 		return
 	}
+	msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
+		Add(BusiUrl+"/dtmDelKey", &delay.Req{Key: key})
+	msg.TimeoutToFail = 3
 
-	// write to cache
-	_, err := rdb.Set(rdb.Context(), key, value, 0).Result()
+	err := msg.DoAndSubmit(BusiUrl+"/dtmQueryPrepared", func(bb *dtmcli.BranchBarrier) error {
+		return bb.CallWithDB(db, func(tx *sql.Tx) error {
+			_, err := tx.Exec("insert into cache1.t1(id, value) values(?, ?) on duplicate key update value=values(value)", 1, value)
+			return err
+		})
+	})
 	logger.FatalIfError(err)
-	// write to db
-	updateDB(value)
 }
 
 func strongRead(confReadCache string, readCache bool) string {
 	checkStatusCompatible(confReadCache, readCache)
-	return ""
+	if !readCache {
+		return queryValue()
+	}
+	sc := delay.NewStrongClient(rdb, 10, 30)
+	r, err := sc.Obtain(key, 600, 3, func() (string, error) {
+		return queryValue(), nil
+	})
+	logger.FatalIfError(err)
+	return r
 }
 
-func addStringConsistency(app *gin.Engine) {
-	app.GET(BusiAPI+"/scDemo", utils.WrapHandler(func(c *gin.Context) interface{} {
+func addStrongConsistency(app *gin.Engine) {
+	app.GET(BusiAPI+"/strongConsistencyDemo", utils.WrapHandler(func(c *gin.Context) interface{} {
 		// set up
 		// none: all read from db
 		// partial: some read from db, some read from cache.
@@ -87,6 +104,6 @@ func addStringConsistency(app *gin.Engine) {
 		confWriteCache = "partial" // 关闭写缓存开关，在分布式应用中，配置会逐步在各个进程生效。
 		time.Sleep(2 * time.Second)
 		confWriteCache = "none" // 关闭写缓存开关，所有进程上都已关闭，所有写都会只写DB
-		return "nil"
+		return "finished"
 	}))
 }

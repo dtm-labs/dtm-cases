@@ -23,10 +23,10 @@
 ### 延迟删除
 
 #### 延迟删除库
-代码在delay/lib.go，主要函数介绍如下：
-- `func NewClient(rdb *redis.Client, delay int64) *Client` 创建一个延迟删除的对象
+代码在delay/client.go，主要函数介绍如下：
+- `func NewClient(rdb *redis.Client, delay int, emptyExpire int) *Client` 创建一个延迟删除的对象
 - `func (c *Client) Delete(key string) error` 延迟删除一条数据
-- `func (c *Client) Obtain(key string, expire int, maxCalTime int64, fn func() (string, error)) (string, error) ` 获取数据
+- `func (c *Client) Obtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) ` 获取数据
 
 Obtain函数用于获取数据，参数介绍如下：
 - key 缓存的key
@@ -38,6 +38,27 @@ Obtain函数用于获取数据，参数介绍如下：
 代码主要在demo/dalyDelete，例子主要演示了延迟删除方法的各种特性，通过下面代码运行延迟删除的测试用例
 
 `curl http://localhost:8081/api/busi/delayDeleteCases`
+
+代码中解释如下：
+- case-empty: 数据为空时，会调用getData1获取数据，耗时1s
+- case-emptyWait：数据为空，并且缓存被锁，此时会sleep等待缓存数据
+- case-exists：数据存在，正常返回
+- case-delayDeleteQuery1：数据存在，但是已经被延迟删除，此时会启动异步协程去计算新结果，并立即返回缓存中的旧值
+- case-delayDeleteQuery2：数据存在，但是已经被延迟删除，并且被锁，此时不会计算新结果，只会立即返回缓存中的旧值
+- case-delayDeleteQuery3：数据存在，Query1中的协程已计算出新结果，并更新到缓存，返回缓存中的新值
+
+### 强一致访问
+
+#### 强一致缓存库
+代码在delay/strongClient.go，主要函数介绍如下：
+- `func NewStrongClient(rdb *redis.Client, delay int, emptyExpire int) *Client` 创建一个延迟删除的对象
+- `func (c *Client) Delete(key string) error` 延迟删除一条数据
+- `func (c *Client) Obtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) ` 获取数据
+
+#### 强一致访问用例
+代码主要在demo/strongConsistency，例子主要演示了强一致访问升降级的各种特性，通过下面代码运行强一致访问的测试用例
+
+`curl http://localhost:8081/api/busi/strongConsistencyDemo`
 
 代码中解释如下：
 - case-empty: 数据为空时，会调用getData1获取数据，耗时1s

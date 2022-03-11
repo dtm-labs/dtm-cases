@@ -16,8 +16,9 @@ type Req struct {
 }
 
 type Client struct {
-	rdb   *redis.Client
-	delay int64
+	rdb         *redis.Client
+	Delay       int
+	EmptyExpire int
 }
 
 func MustReqFrom(c *gin.Context) *Req {
@@ -27,8 +28,8 @@ func MustReqFrom(c *gin.Context) *Req {
 	return &req
 }
 
-func NewClient(rdb *redis.Client, delay int64) *Client {
-	return &Client{rdb, delay}
+func NewClient(rdb *redis.Client, delay int, emptyExpire int) *Client {
+	return &Client{rdb: rdb, Delay: delay, EmptyExpire: emptyExpire}
 }
 
 func now() int64 {
@@ -54,11 +55,11 @@ end
 redis.call('HSET', KEYS[1], 'lockUtil', ARGV[1])
 redis.call('HDEL', KEYS[1], 'lockOwner')
 redis.call('EXPIRE', KEYS[1], ARGV[2])
-	`, []string{key}, []interface{}{time.Now().Add(-1 * time.Second).Unix(), c.delay})
+	`, []string{key}, []interface{}{time.Now().Add(-1 * time.Second).Unix(), c.Delay})
 	return err
 }
 
-func (c *Client) Obtain(key string, expire int, maxCalTime int64, fn func() (string, error)) (string, error) {
+func (c *Client) Obtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) {
 	logger.Debugf("delay.Obtain: key=%s", key)
 	owner := shortuuid.New()
 	redisGet := func() ([]interface{}, error) {
@@ -71,7 +72,7 @@ func (c *Client) Obtain(key string, expire int, maxCalTime int64, fn func() (str
 			return { v, 'LOCKED' }
 		end
 		return {v, lu}
-		`, []string{key}, []interface{}{now() + maxCalTime, owner})
+		`, []string{key}, []interface{}{now() + int64(maxCalTime), owner})
 		if err != nil {
 			return nil, err
 		}
@@ -95,6 +96,9 @@ func (c *Client) Obtain(key string, expire int, maxCalTime int64, fn func() (str
 		result, err := fn()
 		if err != nil {
 			return "", err
+		}
+		if result == "" {
+			expire = c.EmptyExpire
 		}
 		_, err = callLua(c.rdb, `-- delay.Set
 	local o = redis.call('HGET', KEYS[1], 'lockOwner')

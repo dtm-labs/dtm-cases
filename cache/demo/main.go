@@ -28,7 +28,7 @@ var BusiUrl = fmt.Sprintf("http://localhost:%d%s", BusiPort, BusiAPI)
 
 var rdb = redis.NewClient(&redisOption)
 
-var dc = delay.NewClient(rdb, 3)
+var dc = delay.NewClient(rdb, 3, 30)
 
 var db *sql.DB
 
