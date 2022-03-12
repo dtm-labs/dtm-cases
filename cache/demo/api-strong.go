@@ -55,7 +55,7 @@ func strongRead(confReadCache string, readCache bool) string {
 }
 
 func addStrongConsistency(app *gin.Engine) {
-	app.GET(BusiAPI+"/strongConsistencyDemo", utils.WrapHandler(func(c *gin.Context) interface{} {
+	app.GET(BusiAPI+"/strongDemo", utils.WrapHandler(func(c *gin.Context) interface{} {
 		// set up
 		// none: all read from db
 		// partial: some read from db, some read from cache.
@@ -71,19 +71,22 @@ func addStrongConsistency(app *gin.Engine) {
 		// 准备升级
 		confWriteCache = "partial" // 打开写缓存开关，在分布式应用中，配置会逐步在各个进程生效。
 		strongWrite(expected, confWriteCache, true)
+		clearCache()
+		eventualObtain() // simulate a read. it will populate cache.
 
 		expected = "value2"
 		strongWrite(expected, confWriteCache, false)
 
 		v := strongRead("parital", true) // 如果此时错误的打开了读缓存，那么部分请求会读取到缓存中的脏数据，导致 v != expected
-		logger.FatalfIf(v == expected, "strongRead('parital', true) expected: %s, actual: %s", expected, v)
+		ensure(v != expected, "upgrading bug occur partial-write-partial-read: expecting v != expected, v=%s, expected=%s", v, expected)
 
 		time.Sleep(2 * time.Second)
 		confWriteCache = "full" // 写缓存的升级已全部完成，所有的写都会写DB+缓存
+		strongWrite(expected, confWriteCache, true)
 
 		confReadCache = "patial"            // 打开读缓存开关
 		v = strongRead(confReadCache, true) // 此时读取缓存，能够读取缓存中的正确数据
-		logger.FatalfIf(v != expected, "strongRead('parital', true) expected: %s, actual: %s", expected, v)
+		ensure(v == expected, "full-write-partial-read: expecting v == expected, v=%s, expected=%s", v, expected)
 		time.Sleep(2 * time.Second)
 		confReadCache = "full" // 读缓存的升级完成
 		// 升级完成
@@ -94,13 +97,13 @@ func addStrongConsistency(app *gin.Engine) {
 
 		strongWrite(expected, "partial", false) // 如果此时错误的关闭了写缓存，那么部分请求会只写DB
 		v = strongRead(confReadCache, true)     // 此时部分请求会读取到缓存中的脏数据，导致 v != expected
-		logger.FatalfIf(v == expected, "strongRead('parital', true) expected: %s, actual: %s", expected, v)
+		ensure(v != expected, "downgrading bug occur partial-read-patial-write: expecting v != expected, v=%s, expected=%s", v, expected)
 
 		time.Sleep(2 * time.Second)
 		confReadCache = "none" // 关闭读缓存开关，所有进程上都已关闭，所有读都会从DB中读取
 
 		v = strongRead(confReadCache, false) // 此时所有的读都从DB中读取，不会读取到脏数据
-		logger.FatalfIf(v != expected, "strongRead('none', false) expected: %s, actual: %s", expected, v)
+		ensure(v == expected, "none-read-partial-write: expecting v == expected, v=%s, expected=%s", v, expected)
 
 		confWriteCache = "partial" // 关闭写缓存开关，在分布式应用中，配置会逐步在各个进程生效。
 		time.Sleep(2 * time.Second)

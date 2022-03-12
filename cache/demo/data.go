@@ -51,6 +51,11 @@ func getDB() (string, error) {
 	return value, err
 }
 
+func clearCache() {
+	err := rdb.Del(rdb.Context(), rdbKey).Err()
+	logger.FatalIfError(err)
+}
+
 func obtainValue() string {
 	v, err := rdb.Get(rdb.Context(), rdbKey).Result()
 	if err == redis.Nil {

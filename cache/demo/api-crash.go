@@ -27,8 +27,7 @@ func addConsistencyRoute(app *gin.Engine) {
 			if crash != "" { // simulate crash
 				select {}
 			}
-			_, err = rdb.Del(rdb.Context(), rdbKey).Result()
-			logger.FatalIfError(err)
+			clearCache()
 		}()
 		time.Sleep(time.Millisecond * 200)
 		v := obtainValue()
