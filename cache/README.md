@@ -14,7 +14,7 @@
 `go run main.go`
 
 ### 保证一致性
-代码主要在demo/consistency，例子主要演示了写DB，删除缓存的普通写法和dtm建议写法
+代码主要在demo/api-consistency，例子主要演示了写DB，删除缓存的普通写法和dtm建议写法
 - 发起一个普通写法请求，没有发生crash，数据一致 `curl http://localhost:8081/api/busi/normalUpdate?crash=`
 - 发起一个普通写法请求，模拟crash，导致DB与缓存不一致 `curl http://localhost:8081/api/busi/normalUpdate?crash=1`
 - 发起一个dtm写法请求，没有发生crash，数据一致 `curl http://localhost:8081/api/busi/dtmUpdate?crash=`

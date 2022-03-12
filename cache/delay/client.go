@@ -9,18 +9,21 @@ import (
 	"github.com/lithammer/shortuuid"
 )
 
+// Req is request
 type Req struct {
 	Key    string `json:"key"`
 	Value  string `json:"value"`
 	Expire int64  `json:"expire"`
 }
 
+// Client delay client
 type Client struct {
 	rdb         *redis.Client
 	Delay       int
 	EmptyExpire int
 }
 
+// MustReqFrom gin.Context to Req
 func MustReqFrom(c *gin.Context) *Req {
 	var req Req
 	err := c.BindJSON(&req)
@@ -28,6 +31,7 @@ func MustReqFrom(c *gin.Context) *Req {
 	return &req
 }
 
+// NewClient new a delay client
 func NewClient(rdb *redis.Client, delay int, emptyExpire int) *Client {
 	return &Client{rdb: rdb, Delay: delay, EmptyExpire: emptyExpire}
 }
@@ -45,6 +49,7 @@ func callLua(rdb *redis.Client, script string, keys []string, args []interface{}
 	return v, err
 }
 
+// Delete delay delete a key
 func (c *Client) Delete(key string) error {
 	logger.Debugf("delay.Delete: key=%s", key)
 	_, err := callLua(c.rdb, ` --  delay.Delete
@@ -59,6 +64,7 @@ redis.call('EXPIRE', KEYS[1], ARGV[2])
 	return err
 }
 
+// Obtain obtain a key. If key is empty, call fn to get value.
 func (c *Client) Obtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) {
 	logger.Debugf("delay.Obtain: key=%s", key)
 	owner := shortuuid.New()
@@ -119,6 +125,7 @@ func (c *Client) Obtain(key string, expire int, maxCalTime int, fn func() (strin
 	return r[0].(string), nil
 }
 
+// StrongObtain obtain a key. If key is empty, call fn to get value.
 func (c *Client) StrongObtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) {
 	logger.Debugf("delay.Obtain: key=%s", key)
 	owner := shortuuid.New()
