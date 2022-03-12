@@ -12,67 +12,99 @@ import (
 	"github.com/lithammer/shortuuid"
 )
 
-func addConsistencyRoute(app *gin.Engine) {
-	app.GET(BusiAPI+"/normalUpdate", utils.WrapHandler(func(c *gin.Context) interface{} {
-		// set up
-		updateDB("none")
-		_, err := rdb.Set(rdb.Context(), rdbKey, "none", 0).Result()
+func updateValue(nvalue string) {
+	msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
+		Add(BusiUrl+"/delayDelete", &delay.Req{Key: rdbKey})
+	msg.WaitResult = true // wait for result. when submit returned without error, cache will be deleted
+	err := msg.DoAndSubmitDB(BusiUrl+"/delayQueryPrepared", db, func(tx *sql.Tx) error {
+		_, err := db.Exec("insert into cache1.t1(id, value) values(?, ?) on duplicate key update value=values(value)", 1, nvalue)
 		logger.FatalIfError(err)
+		return nil
+	})
+	logger.FatalIfError(err)
+}
 
-		// update DB and Del and Query
-		value := "normalUpdate-" + shortuuid.New()
-		crash := c.Query("crash")
-		go func() {
-			updateDB(value)
-			if crash != "" { // simulate crash
-				select {}
-			}
-			_, err = rdb.Del(rdb.Context(), rdbKey).Result()
-			logger.FatalIfError(err)
-		}()
-		time.Sleep(time.Millisecond * 200)
-		v := obtainValue()
-		if crash == "" {
-			ensure(v == value, "expecting v == value v=%s, value=%s", v, value)
-		} else {
-			ensure(v != value, "expecting v != value v=%s, value=%s", v, value)
-		}
+func getData1() (string, error) {
+	var v string
+	err := db.QueryRow("select value from cache1.t1 where id = ?", 1).Scan(&v)
+	logger.FatalIfError(err)
+	logger.Infof("get Data sleeping 1s")
+	time.Sleep(1 * time.Second)
+	return v, nil
+}
+
+func obtain() (result string, used int) {
+	begin := time.Now()
+	v, err := dc.Obtain(rdbKey, 86400, 3, getData1)
+	logger.FatalIfError(err)
+	return v, int(time.Since(begin).Seconds())
+}
+
+func addDelayDelete(app *gin.Engine) {
+	app.POST(BusiAPI+"/delayDelete", utils.WrapHandler(func(c *gin.Context) interface{} {
+		req := delay.MustReqFrom(c)
+		err := dc.Delete(req.Key)
+		logger.FatalIfError(err)
 		return nil
 	}))
-
-	app.GET(BusiAPI+"/dtmUpdate", utils.WrapHandler(func(c *gin.Context) interface{} {
-		// set up
-		updateDB("none")
-		_, err := rdb.Set(rdb.Context(), rdbKey, "none", 0).Result()
+	app.GET(BusiAPI+"/delayQueryPrepared", utils.WrapHandler(func(c *gin.Context) interface{} {
+		bb, err := dtmcli.BarrierFromQuery(c.Request.URL.Query())
 		logger.FatalIfError(err)
+		return bb.QueryPrepared(db)
+	}))
 
-		// update DB and Del and Query
-		value := "normalUpdate-" + shortuuid.New()
-		crash := c.Query("crash")
+	app.GET(BusiAPI+"/delayDeleteDemo", utils.WrapHandler(func(c *gin.Context) interface{} {
+		_, err := db.Exec("insert ignore into cache1.t1(id, value) values(?, ?)", 1, "value1")
+		logger.FatalIfError(err)
+		v, err := dc.Obtain("t1-id-1", 86400, 3, func() (string, error) {
+			logger.Debugf("querying db")
+			var value string
+			err := db.QueryRow("select value from cache1.t1 where id = ?", 1).Scan(&value)
+			return value, err
+		})
+		logger.FatalIfError(err)
+		return v
+	}))
+	app.GET(BusiAPI+"/delayDeleteCases", utils.WrapHandler(func(c *gin.Context) interface{} {
+		updateValue("value1")
+		expected := "value1"
+		// case-empty: no data exists
+		_, err := rdb.Del(rdb.Context(), rdbKey).Result()
+		logger.FatalIfError(err)
 		go func() {
-			msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
-				Add(BusiUrl+"/dtmDelKey", &delay.Req{Key: rdbKey})
-			msg.TimeoutToFail = 3
-			err = msg.DoAndSubmit(BusiUrl+"/dtmQueryPrepared", func(bb *dtmcli.BranchBarrier) error {
-				err := bb.CallWithDB(db, func(tx *sql.Tx) error {
-					return updateInTx(tx, value)
-				})
-				if crash != "" { // simulate crash
-					select {}
-				}
-				return err
-			})
-			logger.FatalIfError(err)
+			v, _ := obtain()
+			logger.FatalfIf(v != expected, "case-empty: expect %s, but got %s", expected, v)
 		}()
 
-		logger.Infof("sleeping for 7 seconds to wait for the update")
-		if crash != "" {
-			time.Sleep(7 * time.Second)
-		} else {
-			time.Sleep(200 * time.Millisecond)
-		}
-		v := obtainValue()
-		ensure(v == value, "expecting v == value v=%s, value=%s", v, value)
-		return nil
+		// case-emptyWait: no data exists, but wait for data
+		time.Sleep(200 * time.Millisecond)
+		v, _ := obtain()
+		logger.FatalfIf(v != expected, "case-exists: expect %s, but got %s", expected, v)
+
+		// case-exists: data exists
+		v, _ = obtain()
+		logger.FatalfIf(v != expected, "case-exists: expect %s, but got %s", expected, v)
+
+		// case-delayDeleteQuery1: data exists, but delay deleted so return old value and get new data async
+		updateValue("value2")
+		logger.FatalIfError(err)
+		v, used := obtain()
+		logger.FatalfIf(v != expected, "case-delayDeleteQuery1: expect %s, but got %s", expected, v)
+		logger.FatalfIf(used > 0, "case-delayDelete: expect 0, but got %d", used)
+
+		// case-delayDeleteQuery2: data exists, but delay deleted and locked return old value
+		v, used = obtain()
+		logger.FatalfIf(v != expected, "case-delayDeleteQuery2: expect %s, but got %s", expected, v)
+		logger.FatalfIf(used > 0, "case-delayDelete: expect 0, but got %d", used)
+
+		// case-delayDeleteQuery3: data already replaced by new data
+		time.Sleep(1200 * time.Millisecond)
+		expected = "value2"
+		v, used = obtain()
+		logger.FatalfIf(v != expected, "case-delayDeleteQuery3: expect %s, but got %s", expected, v)
+		logger.FatalfIf(used > 0, "case-delayDeleteQuery3: expect 0, but got %d", used)
+
+		return "finished"
 	}))
+
 }

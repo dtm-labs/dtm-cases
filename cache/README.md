@@ -14,7 +14,7 @@
 `go run main.go`
 
 ### 保证一致性
-代码主要在demo/api-consistency，例子主要演示了写DB，删除缓存的普通写法和dtm建议写法
+代码主要在demo/api-crash，例子主要演示了写DB，删除缓存的普通写法和dtm建议写法
 - 发起一个普通写法请求，没有发生crash，数据一致 `curl http://localhost:8081/api/busi/normalUpdate?crash=`
 - 发起一个普通写法请求，模拟crash，导致DB与缓存不一致 `curl http://localhost:8081/api/busi/normalUpdate?crash=1`
 - 发起一个dtm写法请求，没有发生crash，数据一致 `curl http://localhost:8081/api/busi/dtmUpdate?crash=`
@@ -35,7 +35,7 @@ Obtain函数用于获取数据，参数介绍如下：
 - fn 缓存未命中时，获取数据的回调函数
 
 #### 延迟删除用例
-代码主要在demo/dalyDelete，例子主要演示了延迟删除方法的各种特性，通过下面代码运行延迟删除的测试用例
+代码主要在demo/api-consistency，例子主要演示了延迟删除方法的各种特性，通过下面代码运行延迟删除的测试用例
 
 `curl http://localhost:8081/api/busi/delayDeleteCases`
 
@@ -50,13 +50,11 @@ Obtain函数用于获取数据，参数介绍如下：
 ### 强一致访问
 
 #### 强一致缓存库
-代码在delay/strongClient.go，主要函数介绍如下：
-- `func NewStrongClient(rdb *redis.Client, delay int, emptyExpire int) *Client` 创建一个延迟删除的对象
-- `func (c *Client) Delete(key string) error` 延迟删除一条数据
-- `func (c *Client) Obtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) ` 获取数据
+代码在delay/client.go，主要函数介绍如下：
+- `func (c *Client) StrongObtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) ` 获取数据
 
 #### 强一致访问用例
-代码主要在demo/strongConsistency，例子主要演示了强一致访问升降级的各种特性，通过下面代码运行强一致访问的测试用例
+代码主要在demo/api-strong，例子主要演示了强一致访问升降级的各种特性，通过下面代码运行强一致访问的测试用例
 
 `curl http://localhost:8081/api/busi/strongConsistencyDemo`
 
