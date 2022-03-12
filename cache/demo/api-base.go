@@ -10,16 +10,23 @@ import (
 
 func addBaseRoute(app *gin.Engine) {
 
-	app.POST(BusiAPI+"/dtmDelKey", utils.WrapHandler(func(c *gin.Context) interface{} {
+	app.POST(BusiAPI+"/deleteKey", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := delay.MustReqFrom(c)
 		logger.Infof("deleting key: %s", req.Key)
 		_, err := rdb.Del(rdb.Context(), req.Key).Result()
 		logger.FatalIfError(err)
 		return nil
 	}))
-	app.GET(BusiAPI+"/dtmQueryPrepared", utils.WrapHandler(func(c *gin.Context) interface{} {
+	app.GET(BusiAPI+"/queryPrepared", utils.WrapHandler(func(c *gin.Context) interface{} {
 		bb, err := dtmcli.BarrierFromQuery(c.Request.URL.Query())
 		logger.FatalIfError(err)
 		return bb.QueryPrepared(db)
 	}))
+	app.POST(BusiAPI+"/delayDeleteKey", utils.WrapHandler(func(c *gin.Context) interface{} {
+		req := delay.MustReqFrom(c)
+		err := dc.Delete(req.Key)
+		logger.FatalIfError(err)
+		return nil
+	}))
+
 }

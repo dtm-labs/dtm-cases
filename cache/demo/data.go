@@ -3,6 +3,7 @@ package demo
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	"github.com/dtm-labs/dtm-cases/cache/delay"
 	"github.com/dtm-labs/dtmcli/logger"
@@ -43,19 +44,19 @@ func updateInTx(tx *sql.Tx, value string) error {
 	return err
 }
 
-func getDB() string {
+func getDB() (string, error) {
 	var value string
 	err := db.QueryRow("select value from cache1.t1 where id=?", dbKey).Scan(&value)
-	logger.FatalIfError(err)
-	logger.Infof("get db: %s", value)
-	return value
+	logger.Infof("get db: %s, %v", value, err)
+	return value, err
 }
 
 func obtainValue() string {
 	v, err := rdb.Get(rdb.Context(), rdbKey).Result()
 	if err == redis.Nil {
-		value := getDB()
-		_, err := rdb.Set(rdb.Context(), rdbKey, value, 0).Result()
+		value, err := getDB()
+		logger.FatalIfError(err)
+		_, err = rdb.Set(rdb.Context(), rdbKey, value, 0).Result()
 		logger.FatalIfError(err)
 		logger.Infof("obtainValue: %s", value)
 		return value
@@ -72,6 +73,6 @@ func ensure(condition bool, format string, v ...interface{}) {
 	}
 	logger.Infof("ensure: %s for %s", hint, fmt.Sprintf(format, v...))
 	if !condition {
-		panic("ensure failed")
+		os.Exit(1)
 	}
 }

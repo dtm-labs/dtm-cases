@@ -28,13 +28,12 @@ func strongWrite(value string, confWriteCache string, writeCache bool) {
 		return
 	}
 	msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
-		Add(BusiUrl+"/dtmDelKey", &delay.Req{Key: rdbKey})
+		Add(BusiUrl+"/delayDeleteKey", &delay.Req{Key: rdbKey})
 	msg.TimeoutToFail = 3
 
-	err := msg.DoAndSubmit(BusiUrl+"/dtmQueryPrepared", func(bb *dtmcli.BranchBarrier) error {
+	err := msg.DoAndSubmit(BusiUrl+"/queryPrepared", func(bb *dtmcli.BranchBarrier) error {
 		return bb.CallWithDB(db, func(tx *sql.Tx) error {
-			_, err := tx.Exec("insert into cache1.t1(id, value) values(?, ?) on duplicate key update value=values(value)", 1, value)
-			return err
+			return updateInTx(tx, value)
 		})
 	})
 	logger.FatalIfError(err)
@@ -43,11 +42,13 @@ func strongWrite(value string, confWriteCache string, writeCache bool) {
 func strongRead(confReadCache string, readCache bool) string {
 	checkStatusCompatible(confReadCache, readCache)
 	if !readCache {
-		return obtainValue()
+		v, err := getDB()
+		logger.FatalIfError(err)
+		return v
 	}
 	sc := delay.NewClient(rdb, 10, 30)
 	r, err := sc.StrongObtain(rdbKey, 600, 3, func() (string, error) {
-		return obtainValue(), nil
+		return getDB()
 	})
 	logger.FatalIfError(err)
 	return r

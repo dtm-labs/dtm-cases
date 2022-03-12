@@ -21,7 +21,6 @@ func Main() {
 	logger.InitLog("debug")
 	startSvr()
 	time.Sleep(200 * time.Millisecond)
-	// dtmcli.GetRestyClient().R().Get(BusiUrl + "/delayDeleteCases")
 	select {}
 }
 

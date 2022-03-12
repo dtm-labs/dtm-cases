@@ -51,9 +51,9 @@ func addConsistencyRoute(app *gin.Engine) {
 		crash := c.Query("crash")
 		go func() {
 			msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
-				Add(BusiUrl+"/dtmDelKey", &delay.Req{Key: rdbKey})
+				Add(BusiUrl+"/deleteKey", &delay.Req{Key: rdbKey})
 			msg.TimeoutToFail = 3
-			err = msg.DoAndSubmit(BusiUrl+"/dtmQueryPrepared", func(bb *dtmcli.BranchBarrier) error {
+			err = msg.DoAndSubmit(BusiUrl+"/queryPrepared", func(bb *dtmcli.BranchBarrier) error {
 				err := bb.CallWithDB(db, func(tx *sql.Tx) error {
 					return updateInTx(tx, value)
 				})
