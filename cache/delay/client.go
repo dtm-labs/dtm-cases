@@ -52,7 +52,7 @@ redis.call('EXPIRE', KEYS[1], ARGV[2])
 	return err
 }
 
-// Obtain obtain a key. If key is empty, call fn to get value.
+// Obtain obtain a key. If value is empty, call fn to get value.
 func (c *Client) Obtain(key string, expire int, fn func() (string, error)) (string, error) {
 	logger.Debugf("delay.Obtain: key=%s", key)
 	owner := shortuuid.New()
@@ -113,8 +113,8 @@ func (c *Client) Obtain(key string, expire int, fn func() (string, error)) (stri
 	return r[0].(string), nil
 }
 
-// StrongObtain obtain a key. If key is empty, call fn to get value.
-func (c *Client) StrongObtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) {
+// StrongObtain obtain a key. If value is empty, call fn to get value.
+func (c *Client) StrongObtain(key string, expire int, fn func() (string, error)) (string, error) {
 	logger.Debugf("delay.Obtain: key=%s", key)
 	owner := shortuuid.New()
 	redisGet := func() ([]interface{}, error) {
@@ -129,7 +129,7 @@ func (c *Client) StrongObtain(key string, expire int, maxCalTime int, fn func() 
 			return { v, 'LOCKED' }
 		end
 		return {v, lu}
-		`, []string{key}, []interface{}{now() + int64(maxCalTime), owner})
+		`, []string{key}, []interface{}{now() + int64(c.LockExpire), owner})
 		if err != nil {
 			return nil, err
 		}

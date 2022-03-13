@@ -47,7 +47,7 @@ func strongRead(confReadCache string, readCache bool) string {
 		return v
 	}
 	sc := delay.NewClient(rdb)
-	r, err := sc.StrongObtain(rdbKey, 600, 3, func() (string, error) {
+	r, err := sc.StrongObtain(rdbKey, 600, func() (string, error) {
 		return getDB()
 	})
 	logger.FatalIfError(err)
