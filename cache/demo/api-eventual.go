@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/dtm-labs/dtm-cases/cache/delay"
 	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/logger"
@@ -14,7 +13,7 @@ import (
 
 func eventualUpdateValue(value string) {
 	msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
-		Add(BusiUrl+"/delayDeleteKey", &delay.Req{Key: rdbKey})
+		Add(BusiUrl+"/delayDeleteKey", &Req{Key: rdbKey})
 	msg.WaitResult = true // wait for result. when submit returned without error, cache has been deleted
 	err := msg.DoAndSubmitDB(BusiUrl+"/queryPrepared", db, func(tx *sql.Tx) error {
 		return updateInTx(tx, value)
@@ -31,7 +30,7 @@ func eventualSleepGetDB() (string, error) {
 
 func eventualObtain() (result string, used int) {
 	begin := time.Now()
-	v, err := dc.Obtain(rdbKey, 86400, 3, eventualSleepGetDB)
+	v, err := dc.Obtain(rdbKey, 86400, eventualSleepGetDB)
 	logger.FatalIfError(err)
 	return v, int(time.Since(begin).Seconds())
 }
@@ -39,7 +38,7 @@ func eventualObtain() (result string, used int) {
 func addDelayDelete(app *gin.Engine) {
 	app.GET(BusiAPI+"/eventualNormal", utils.WrapHandler(func(c *gin.Context) interface{} {
 		updateDB("value1")
-		v, err := dc.Obtain(rdbKey, 86400, 3, getDB)
+		v, err := dc.Obtain(rdbKey, 86400, getDB)
 		logger.FatalIfError(err)
 		return v
 	}))

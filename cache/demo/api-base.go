@@ -1,7 +1,6 @@
 package demo
 
 import (
-	"github.com/dtm-labs/dtm-cases/cache/delay"
 	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/logger"
@@ -11,7 +10,7 @@ import (
 func addBaseRoute(app *gin.Engine) {
 
 	app.POST(BusiAPI+"/deleteKey", utils.WrapHandler(func(c *gin.Context) interface{} {
-		req := delay.MustReqFrom(c)
+		req := MustReqFrom(c)
 		logger.Infof("deleting key: %s", req.Key)
 		_, err := rdb.Del(rdb.Context(), req.Key).Result()
 		logger.FatalIfError(err)
@@ -23,7 +22,7 @@ func addBaseRoute(app *gin.Engine) {
 		return bb.QueryPrepared(db)
 	}))
 	app.POST(BusiAPI+"/delayDeleteKey", utils.WrapHandler(func(c *gin.Context) interface{} {
-		req := delay.MustReqFrom(c)
+		req := MustReqFrom(c)
 		err := dc.Delete(req.Key)
 		logger.FatalIfError(err)
 		return nil

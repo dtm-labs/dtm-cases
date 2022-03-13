@@ -28,7 +28,7 @@ func strongWrite(value string, confWriteCache string, writeCache bool) {
 		return
 	}
 	msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
-		Add(BusiUrl+"/delayDeleteKey", &delay.Req{Key: rdbKey})
+		Add(BusiUrl+"/delayDeleteKey", &Req{Key: rdbKey})
 	msg.TimeoutToFail = 3
 
 	err := msg.DoAndSubmit(BusiUrl+"/queryPrepared", func(bb *dtmcli.BranchBarrier) error {
@@ -46,7 +46,7 @@ func strongRead(confReadCache string, readCache bool) string {
 		logger.FatalIfError(err)
 		return v
 	}
-	sc := delay.NewClient(rdb, 10, 30)
+	sc := delay.NewClient(rdb)
 	r, err := sc.StrongObtain(rdbKey, 600, 3, func() (string, error) {
 		return getDB()
 	})

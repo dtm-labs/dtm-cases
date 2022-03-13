@@ -7,6 +7,7 @@ import (
 
 	"github.com/dtm-labs/dtm-cases/cache/delay"
 	"github.com/dtm-labs/dtmcli/logger"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -22,7 +23,7 @@ var redisOption = redis.Options{
 
 var rdb = redis.NewClient(&redisOption)
 
-var dc = delay.NewClient(rdb, 3, 30)
+var dc = delay.NewClient(rdb)
 
 var db *sql.DB
 
@@ -30,6 +31,21 @@ func init() {
 	var err error
 	db, err = sql.Open("mysql", "dtm:passwd123dtm@tcp(dtm.pub:3306)/cache1?charset=utf8")
 	logger.FatalIfError(err)
+}
+
+// Req is request
+type Req struct {
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	Expire int64  `json:"expire"`
+}
+
+// MustReqFrom gin.Context to Req
+func MustReqFrom(c *gin.Context) *Req {
+	var req Req
+	err := c.BindJSON(&req)
+	logger.FatalIfError(err)
+	return &req
 }
 
 func updateDB(value string) {

@@ -4,36 +4,24 @@ import (
 	"time"
 
 	"github.com/dtm-labs/dtmcli/logger"
-	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/lithammer/shortuuid"
 )
 
-// Req is request
-type Req struct {
-	Key    string `json:"key"`
-	Value  string `json:"value"`
-	Expire int64  `json:"expire"`
-}
-
 // Client delay client
 type Client struct {
-	rdb         *redis.Client
-	Delay       int
+	rdb *redis.Client
+	// Delay is the delay delete time. unit seconds. default is 10s
+	Delay int
+	// EmptyExpire is the expire time for empty result. unit seconds. default is 60s
 	EmptyExpire int
-}
-
-// MustReqFrom gin.Context to Req
-func MustReqFrom(c *gin.Context) *Req {
-	var req Req
-	err := c.BindJSON(&req)
-	logger.FatalIfError(err)
-	return &req
+	// LockExpire is the expire time for lock. unit seconds. default is 3s
+	LockExpire int
 }
 
 // NewClient new a delay client
-func NewClient(rdb *redis.Client, delay int, emptyExpire int) *Client {
-	return &Client{rdb: rdb, Delay: delay, EmptyExpire: emptyExpire}
+func NewClient(rdb *redis.Client) *Client {
+	return &Client{rdb: rdb, Delay: 10, EmptyExpire: 60, LockExpire: 3}
 }
 
 func now() int64 {
@@ -65,7 +53,7 @@ redis.call('EXPIRE', KEYS[1], ARGV[2])
 }
 
 // Obtain obtain a key. If key is empty, call fn to get value.
-func (c *Client) Obtain(key string, expire int, maxCalTime int, fn func() (string, error)) (string, error) {
+func (c *Client) Obtain(key string, expire int, fn func() (string, error)) (string, error) {
 	logger.Debugf("delay.Obtain: key=%s", key)
 	owner := shortuuid.New()
 	redisGet := func() ([]interface{}, error) {
@@ -78,7 +66,7 @@ func (c *Client) Obtain(key string, expire int, maxCalTime int, fn func() (strin
 			return { v, 'LOCKED' }
 		end
 		return {v, lu}
-		`, []string{key}, []interface{}{now() + int64(maxCalTime), owner})
+		`, []string{key}, []interface{}{now() + int64(c.LockExpire), owner})
 		if err != nil {
 			return nil, err
 		}

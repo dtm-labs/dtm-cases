@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/dtm-labs/dtm-cases/cache/delay"
 	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/logger"
@@ -50,7 +49,7 @@ func addConsistencyRoute(app *gin.Engine) {
 		crash := c.Query("crash")
 		go func() {
 			msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
-				Add(BusiUrl+"/deleteKey", &delay.Req{Key: rdbKey})
+				Add(BusiUrl+"/deleteKey", &Req{Key: rdbKey})
 			msg.TimeoutToFail = 3
 			err = msg.DoAndSubmit(BusiUrl+"/queryPrepared", func(bb *dtmcli.BranchBarrier) error {
 				err := bb.CallWithDB(db, func(tx *sql.Tx) error {
