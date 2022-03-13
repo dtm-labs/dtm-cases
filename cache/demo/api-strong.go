@@ -68,8 +68,8 @@ func addStrongConsistency(app *gin.Engine) {
 		var confWriteCache = "none"
 		expected := "value1"
 
-		// 准备升级
-		confWriteCache = "partial" // 打开写缓存开关，在分布式应用中，配置会逐步在各个进程生效。
+		// begin to upgrade to use cache
+		confWriteCache = "partial" // begin to switch to write to cache. In a distributed app, this switch will take effect gradually
 		strongWrite(expected, confWriteCache, true)
 		clearCache()
 		eventualObtain() // simulate a read. it will populate cache.
@@ -77,37 +77,37 @@ func addStrongConsistency(app *gin.Engine) {
 		expected = "value2"
 		strongWrite(expected, confWriteCache, false)
 
-		v := strongRead("parital", true) // 如果此时错误的打开了读缓存，那么部分请求会读取到缓存中的脏数据，导致 v != expected
+		v := strongRead("parital", true) // error! if you errorly switch to read from cache, some request will read error data
 		ensure(v != expected, "upgrading bug occur partial-write-partial-read: expecting v != expected, v=%s, expected=%s", v, expected)
 
 		time.Sleep(2 * time.Second)
-		confWriteCache = "full" // 写缓存的升级已全部完成，所有的写都会写DB+缓存
+		confWriteCache = "full" // finish to switch to write to cache. all writes will be written to cache now.
 		strongWrite(expected, confWriteCache, true)
 
-		confReadCache = "patial"            // 打开读缓存开关
-		v = strongRead(confReadCache, true) // 此时读取缓存，能够读取缓存中的正确数据
+		confReadCache = "patial"            // begin to switch to read from cache. In a distributed app, this switch will take effect gradually
+		v = strongRead(confReadCache, true) // now read from cache, all reads are ok
 		ensure(v == expected, "full-write-partial-read: expecting v == expected, v=%s, expected=%s", v, expected)
 		time.Sleep(2 * time.Second)
-		confReadCache = "full" // 读缓存的升级完成
-		// 升级完成
+		confReadCache = "full" // finish to switch to read from cache
+		// upgrade to use cache ok
 
-		// 运行一段时间后，Redis出现故障，现在需要降级
-		confReadCache = "patial" // 关闭读缓存开关，在分布式应用中，配置会逐步在各个进程生效。
+		// if redis got some problem, now we need to downgrade to not use cache
+		confReadCache = "patial" // begin to switch to read not from cache. In a distributed app, this switch will take effect gradually
 		expected = "value3"
 
-		strongWrite(expected, "partial", false) // 如果此时错误的关闭了写缓存，那么部分请求会只写DB
-		v = strongRead(confReadCache, true)     // 此时部分请求会读取到缓存中的脏数据，导致 v != expected
+		strongWrite(expected, "partial", false) // error! if you errorly switch not to write cache, some request will read error data
+		v = strongRead(confReadCache, true)
 		ensure(v != expected, "downgrading bug occur partial-read-patial-write: expecting v != expected, v=%s, expected=%s", v, expected)
 
 		time.Sleep(2 * time.Second)
-		confReadCache = "none" // 关闭读缓存开关，所有进程上都已关闭，所有读都会从DB中读取
+		confReadCache = "none" // finish to switch to read only from db
 
-		v = strongRead(confReadCache, false) // 此时所有的读都从DB中读取，不会读取到脏数据
+		v = strongRead(confReadCache, false) // all reads are from db, ok
 		ensure(v == expected, "none-read-partial-write: expecting v == expected, v=%s, expected=%s", v, expected)
 
-		confWriteCache = "partial" // 关闭写缓存开关，在分布式应用中，配置会逐步在各个进程生效。
+		confWriteCache = "partial" // begin to switch to write only to db, In a distributed app, this switch will take effect gradually
 		time.Sleep(2 * time.Second)
-		confWriteCache = "none" // 关闭写缓存开关，所有进程上都已关闭，所有写都会只写DB
+		confWriteCache = "none" // finish to switch to write only to db
 		return "finished"
 	}))
 }
