@@ -1,30 +1,32 @@
-# 订单应用
+English | [简体中文](./README-cn.md)
 
-此项目可以结合dtm文档中的 [订单应用](https://dtm.pub/app/order.html)阅读
+# Order applications
 
-## 概述
-本项目主要演示了dtm如何应用于非单体的订单系统，保证订单中的多个步骤，能够最终“原子”执行，保证最终一致性。
+This example can be read in conjunction with the [Order Application](https://en.dtm.pub/app/order.html) in the dtm documentation
 
-#### 启动dtm
-[快速启动dtm](https://dtm.pub/guide/install.html)
+## Overview
+This project demonstrates how dtm can be applied to a non-monolithic order system to ensure that multiple steps in an order are eventually executed "atomically" to ensure eventual consistency.
 
-#### 运行本例子
+#### Starting dtm
+[Quick start dtm](https://en.dtm.pub/guide/install.html)
+
+#### Run this example
 `go run main.go`
 
-#### 发起订单请求
-- 发起一个正常订单 `curl http://localhost:8081/api/fireSucceed`
-- 发起一个因库存不足的回滚订单 `curl http://localhost:8081/api/fireFailed`
-- 发起一个因扣减优惠券失败而回滚的订单 `curl http://localhost:8081/api/fireFailedCoupon`
+#### Initiating an order request
+- Initiate a normal order `curl http://localhost:8081/api/fireSucceed`
+- Launch a rollback order due to insufficient stock `curl http://localhost:8081/api/fireFailed`
+- Initiating a rollback order for a failed coupon deduction `curl http://localhost:8081/api/fireFailedCoupon`
 
-以下几点说明一下：
-1. fireFailed 请求，是因为库存不足而失败，此时全局事务会回滚。回滚时会进行库存的回滚操作，此时库存回滚时发生了一个空补偿，在实际操作中不会进行库存相关的业务操作
-2. fireFailedCoupon 请求，是因为扣减优惠券不成功而失败，回滚时会进行库存的回滚操作，此时库存回滚时发生了一个正常补偿，在实际操作中会进行库存相关的业务操作
-3. 开发人员无需关心是否空补偿，开发者只需要关心如何扣减库存和回滚库存，是否空补偿，以及如何回滚空补偿等，都会有dtm框架进行自动处理。
+The following points should be noted.
+1. fireFailed requests, which fail because of insufficient stock, will be rolled back by the global transaction. The rollback is a null compensation and no stock adjustment will be done.
+2. fireFailedCoupon requests, which fail because of unsuccessful coupon deductions, are rolled back. The stock will also be rolled back and real stock adjustment will be done.
+3. developers do not need to care about null compensation, developers only need to care about how to deduct inventory and roll back inventory, whether null compensation, and how to roll back null compensation, etc., will be automatically handled by the dtm framework.
 
-#### 目录说明
-本项目有以下内容
-- main.go: 主程序文件
-- service目录：相关各个服务文件
-- conf目录：相关配置
-- common目录：多个服务共享的代码
-- order.sql: 创建本例子所需的订单系统表
+#### Directory Description
+This project has the following contents
+- main.go: the main program file
+- service directory: the relevant individual service files
+- conf directory: the relevant configuration
+- common directory: code shared by multiple services
+- order.sql: the order system table needed to create this example

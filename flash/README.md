@@ -1,28 +1,29 @@
-# 秒杀应用
-此项目可以结合dtm文档中的 [秒杀应用](https://dtm.pub/app/flash.html)阅读
+English | [简体中文](./README-cn.md)
 
-## 概述
-本项目主要演示了dtm如何应用于秒杀系统，将演示秒杀系统中及时发生进程crash，也能够保证精准的扣减库存并创建精准数量的订单。
+# Flash-sale application
+This project can be read in conjunction with the [flash-sale](https://en.dtm.pub/app/flash.html) in the dtm documentation
 
-#### 启动dtm
-[快速启动dtm](https://dtm.pub/guide/install.html)
+## Overview
+This project demonstrates how dtm can be applied to a flash-sale system, and will demonstrate how a flash-sale system can ensure accurate stock deductions and create accurate quantities of orders even when a process crash occurs.
 
-#### 运行本例子
+#### start dtm
+[Quick start dtm](https://en.dtm.pub/guide/install.html)
+
+#### Run this example
 `go run main.go`
 
-#### 发起订单请求
-- 发起一个正常完成的秒杀请求 `curl http://localhost:8081/api/busi/flashSales`
-- 发起一个完成库存扣减就crash的秒杀请求 `curl http://localhost:8081/api/busi/flashSales-crash` 大约等待十多秒之后，订单创建完成，不受影响
+#### Launching an order request
+- Launch a flash-sale request that completes normally `curl http://localhost:8081/api/busi/flashSales`
+- Launch a flash-sale request that crashes when the stock deduction is complete `curl http://localhost:8081/api/busi/flashSales-crash` Wait about ten seconds or so for the order to be created without impact
 
-#### 模拟秒杀活动
+#### Simulates a flash-sale
 `curl http://localhost:8081/api/busi/flashSales-batch`
 
-用户发起这个模拟秒杀活动的请求之后，本例子会做如下事情：
-1. 重置各项变量：将库存设置为4，将已创建的订单数重置为0
-2. 发起一个扣减完库存就宕机的请求，然后睡眠0.5s，保证进行下一步前，库存已扣减到3
-3. 发起10个并发的秒杀请求，然后睡眠0.5s，保证进行下一步前，这10个秒杀请求已处理
-4. 此时输出已经创建的订单数量为3，这三个订单都是步骤3中产生的
-5. 大约等待3~5秒，可以看到创建的订单数量变为4，这是因为步骤2里面的全局事务超时检查，最后成功，创建了第4个订单
+After the user initiates this simulated flash-sale request, the example does the following.
+1. Reset the variables: set the stock to 4 and reset the number of orders created to 0
+2. Initiate a flash-sale request. The handler of this request will simulate a crash after the stock is deducted. It will then sleep for 0.5s to ensure that the stock is deducted to 3 before proceeding to the next step
+3. Launch 10 concurrent flash-sale requests, then sleep for 0.5s to ensure that the 10 flash-sale requests are processed before proceeding to the next step
+4. Output the number of orders created at this point as 3, all three of which were generated in step 3
+5. Wait about 3-5 seconds and you can see that the number of orders created changes to 4. This is due to the global transaction timeout check in step 2, which finally succeeds and creates the 4th order
 
-结论：本示例的方法，可以保证Redis中的库存和数据库中的订单，最终严格一致，无需手动校准数据
-
+Conclusion: The approach in this example ensures that the inventory in Redis and the orders in the database end up being strictly consistent, eliminating the need to manually calibrate the data

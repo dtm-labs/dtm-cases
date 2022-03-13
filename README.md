@@ -1,10 +1,12 @@
-# dtm 的典型案例
+English | [简体中文](./README-cn.md)
 
-## 订单应用
-dtm 可以大幅简化非单体的订单系统，详情参见 [order](./order)
+# Application of dtm
 
-## 秒杀应用
-dtm 可以应用于精准扣库存的秒杀系统，详情参见[flash](./flash)
+## Order Applications
+dtm can significantly simplify the order system for non-monolithic order system, see [order](./order)
 
-## 缓存应用
-dtm 可以应用缓存一致性，详情参加[cache](./cache)
+## Flash-sale Applications
+dtm can be used for precise stock deduction of flash-sale, see [flash](./flash)
+
+## Caching applications
+dtm can be applied to ensure cache consistency, see [cache](./cache)
