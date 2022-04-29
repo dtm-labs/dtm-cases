@@ -30,7 +30,7 @@ func eventualSleepGetDB() (string, error) {
 
 func eventualObtain() (result string, used int) {
 	begin := time.Now()
-	v, err := dc.Obtain(rdbKey, 86400, eventualSleepGetDB)
+	v, err := dc.Fetch(rdbKey, 86400, eventualSleepGetDB)
 	logger.FatalIfError(err)
 	return v, int(time.Since(begin).Seconds())
 }
@@ -38,7 +38,7 @@ func eventualObtain() (result string, used int) {
 func addDelayDelete(app *gin.Engine) {
 	app.GET(BusiAPI+"/eventualNormal", utils.WrapHandler(func(c *gin.Context) interface{} {
 		updateDB("value1")
-		v, err := dc.Obtain(rdbKey, 86400, getDB)
+		v, err := dc.Fetch(rdbKey, 86400, getDB)
 		logger.FatalIfError(err)
 		return v
 	}))

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dtm-labs/dtm-cases/cache/delay"
 	"github.com/dtm-labs/dtmcli/logger"
+	"github.com/dtm-labs/rockscache"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 )
@@ -23,7 +23,7 @@ var redisOption = redis.Options{
 
 var rdb = redis.NewClient(&redisOption)
 
-var dc = delay.NewClient(rdb)
+var dc = rockscache.NewClient(rdb, rockscache.NewDefaultOptions())
 
 var db *sql.DB
 

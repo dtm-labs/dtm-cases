@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/dtm-labs/dtm-cases/cache/delay"
 	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/logger"
+	"github.com/dtm-labs/rockscache"
 	"github.com/gin-gonic/gin"
 	"github.com/lithammer/shortuuid"
 )
@@ -46,8 +46,10 @@ func strongRead(confReadCache string, readCache bool) string {
 		logger.FatalIfError(err)
 		return v
 	}
-	sc := delay.NewClient(rdb)
-	r, err := sc.StrongObtain(rdbKey, 600, func() (string, error) {
+	options := rockscache.NewDefaultOptions()
+	options.StrongConsistency = true
+	sc := rockscache.NewClient(rdb, options)
+	r, err := sc.Fetch(rdbKey, 600, func() (string, error) {
 		return getDB()
 	})
 	logger.FatalIfError(err)

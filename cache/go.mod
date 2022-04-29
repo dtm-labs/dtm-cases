@@ -6,16 +6,17 @@ require (
 	github.com/dtm-labs/dtm-cases/utils v0.0.0-20220212020344-f9e4121a6c7f
 	github.com/dtm-labs/dtmcli v1.12.1
 	github.com/gin-gonic/gin v1.7.7
-	github.com/go-redis/redis/v8 v8.11.4
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/lithammer/shortuuid v2.0.3+incompatible
-	github.com/stretchr/testify v1.7.0
+	github.com/lithammer/shortuuid v3.0.0+incompatible
+	github.com/stretchr/testify v1.7.1
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/dtm-labs/rockscache v0.0.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
@@ -24,6 +25,7 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.14.2 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect

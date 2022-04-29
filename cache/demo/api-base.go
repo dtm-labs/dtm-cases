@@ -23,7 +23,7 @@ func addBaseRoute(app *gin.Engine) {
 	}))
 	app.POST(BusiAPI+"/delayDeleteKey", utils.WrapHandler(func(c *gin.Context) interface{} {
 		req := MustReqFrom(c)
-		err := dc.Delete(req.Key)
+		err := dc.DelayDelete(req.Key)
 		logger.FatalIfError(err)
 		return nil
 	}))
