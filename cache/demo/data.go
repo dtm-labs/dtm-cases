@@ -15,13 +15,11 @@ const dbKey = 1
 
 var rdbKey = "t1-id-1"
 
-var redisOption = redis.Options{
+var rdb = redis.NewClient(&redis.Options{
 	Addr:     "dtm.pub:6379",
 	Username: "root",
 	Password: "",
-}
-
-var rdb = redis.NewClient(&redisOption)
+})
 
 var dc = rockscache.NewClient(rdb, rockscache.NewDefaultOptions())
 

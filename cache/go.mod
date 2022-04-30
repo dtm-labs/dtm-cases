@@ -3,8 +3,8 @@ module github.com/dtm-labs/dtm-cases/cache
 go 1.17
 
 require (
-	github.com/dtm-labs/dtm-cases/utils v0.0.0-20220212020344-f9e4121a6c7f
-	github.com/dtm-labs/dtmcli v1.12.1
+	github.com/dtm-labs/dtm-cases/utils v0.0.0-20220429140600-dc1742740428
+	github.com/dtm-labs/dtmcli v1.13.4
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.6.0
@@ -16,6 +16,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/dtm-labs/dtmdriver v0.0.3 // indirect
 	github.com/dtm-labs/rockscache v0.0.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

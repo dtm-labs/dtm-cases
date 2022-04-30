@@ -12,8 +12,14 @@ github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/r
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/dtm-labs/dtm-cases/utils v0.0.0-20220212020344-f9e4121a6c7f h1:DPLgVed9L80CCn3XWjeLJoIEr8lOucTMa8UEXF51UEo=
 github.com/dtm-labs/dtm-cases/utils v0.0.0-20220212020344-f9e4121a6c7f/go.mod h1:Kvj/TzV4O2Z6QktvXdpj4/KmmzKCi36qA8SFyVNg3e4=
+github.com/dtm-labs/dtm-cases/utils v0.0.0-20220429140600-dc1742740428 h1:WC5CTOjwVPjOi2TQZEeNS2fKXI8K0L6n1565Dto51F4=
+github.com/dtm-labs/dtm-cases/utils v0.0.0-20220429140600-dc1742740428/go.mod h1:QoCwO+/mu99N+RqRCQZ6KuL3qOzcsZ20QuWAUCHHLb8=
 github.com/dtm-labs/dtmcli v1.12.1 h1:E9AOw9knOP/9AdSsM1K8rtzXdCrQtAtHP08d3mNSbrU=
 github.com/dtm-labs/dtmcli v1.12.1/go.mod h1:ufP0KAKllPdF+wPna+pKkX8UQroI0afh4YAH4s+8U0M=
+github.com/dtm-labs/dtmcli v1.13.4 h1:Xbvx2ymc85ShY6JgIXcD0csGPwjiLUZUjiHPfjeRoBw=
+github.com/dtm-labs/dtmcli v1.13.4/go.mod h1:otEdxUwM5FIKlCLmg5hL5+Z539DmCK2YJ0G4WNsP6Tw=
+github.com/dtm-labs/dtmdriver v0.0.3 h1:9iAtvXKR3lJXQ7dvS87e4xdtmqkzN+ofek+CF9AvUSY=
+github.com/dtm-labs/dtmdriver v0.0.3/go.mod h1:fLiEeD2BPwM9Yq96TfcP9KpbTwFsn5nTxa/PP0jmFuk=
 github.com/dtm-labs/rockscache v0.0.1 h1:K2FspNfY89IxdqurjFL+EGG3DiX0YBA9FwyHsnbjuoo=
 github.com/dtm-labs/rockscache v0.0.1/go.mod h1:HoSU+RUIcRHdKnbvb0x9JqCHWPn2kGxajf64uK6DHxg=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
