@@ -57,7 +57,7 @@ func strongRead(confReadCache string, readCache bool) string {
 }
 
 func addStrongConsistency(app *gin.Engine) {
-	app.GET(BusiAPI+"/strongDemo", utils.WrapHandler(func(c *gin.Context) interface{} {
+	BusiApp.GET(BusiAPI+"/strongDemo", utils.WrapHandler(func(c *gin.Context) interface{} {
 		// set up
 		// none: all read from db
 		// partial: some read from db, some read from cache.
@@ -73,8 +73,8 @@ func addStrongConsistency(app *gin.Engine) {
 		// begin to upgrade to use cache
 		confWriteCache = "partial" // begin to switch to write to cache. In a distributed app, this switch will take effect gradually
 		strongWrite(expected, confWriteCache, true)
-		clearCache()
-		eventualObtain() // simulate a read. it will populate cache.
+		clearData()
+		// eventualObtain() // simulate a read. it will populate cache.
 
 		expected = "value2"
 		strongWrite(expected, confWriteCache, false)

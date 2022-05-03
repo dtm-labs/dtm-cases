@@ -11,8 +11,8 @@ import (
 	"github.com/lithammer/shortuuid"
 )
 
-func addConsistencyRoute(app *gin.Engine) {
-	app.GET(BusiAPI+"/normalUpdate", utils.WrapHandler(func(c *gin.Context) interface{} {
+func init() {
+	BusiApp.GET(BusiAPI+"/normalUpdate", utils.WrapHandler(func(c *gin.Context) interface{} {
 		// set up
 		updateDB("none")
 		_, err := rdb.Set(rdb.Context(), rdbKey, "none", 0).Result()
@@ -26,7 +26,7 @@ func addConsistencyRoute(app *gin.Engine) {
 			if crash != "" { // simulate crash
 				select {}
 			}
-			clearCache()
+			clearData()
 		}()
 		time.Sleep(time.Millisecond * 200)
 		v := obtainValue()
@@ -38,7 +38,7 @@ func addConsistencyRoute(app *gin.Engine) {
 		return nil
 	}))
 
-	app.GET(BusiAPI+"/dtmUpdate", utils.WrapHandler(func(c *gin.Context) interface{} {
+	BusiApp.GET(BusiAPI+"/dtmUpdate", utils.WrapHandler(func(c *gin.Context) interface{} {
 		// set up
 		updateDB("none")
 		_, err := rdb.Set(rdb.Context(), rdbKey, "none", 0).Result()

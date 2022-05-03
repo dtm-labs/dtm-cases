@@ -17,6 +17,12 @@ const BusiPort = 8081
 
 var BusiUrl = fmt.Sprintf("http://localhost:%d%s", BusiPort, BusiAPI)
 
+var BusiApp = gin.Default()
+
+func init() {
+	gin.SetMode(gin.ReleaseMode)
+}
+
 func Main() {
 	logger.InitLog("debug")
 	startSvr()
@@ -25,17 +31,7 @@ func Main() {
 }
 
 func startSvr() {
-	gin.SetMode(gin.ReleaseMode)
-	app := gin.Default()
-	addRoutes(app)
 	log.Printf("cache examples listening at %d", BusiPort)
-	go app.Run(fmt.Sprintf(":%d", BusiPort))
+	go BusiApp.Run(fmt.Sprintf(":%d", BusiPort))
 	time.Sleep(100 * time.Millisecond)
-}
-
-func addRoutes(app *gin.Engine) {
-	addBaseRoute(app)
-	addConsistencyRoute(app)
-	addDelayDelete(app)
-	addStrongConsistency(app)
 }
