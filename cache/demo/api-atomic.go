@@ -14,20 +14,13 @@ import (
 
 func init() {
 	BusiApp.GET(BusiAPI+"/atomic", utils.WrapHandler(func(c *gin.Context) interface{} {
-		clearData()
 		mode := c.Query("mode")
 		if mode != "normal" && mode != "dtm" {
 			return errors.New("mode should be normal or dtm")
 		}
-		data := "v1"
-		SetDBValue(&DBRow{
-			K:        DataKey,
-			V:        data,
-			TimeCost: "5ms",
-		})
-		SetCacheValue(DataKey, data, mode)
+		initData(DataKey, "v1", mode)
 
-		data = "v2"
+		data := "v2"
 		_ = Post(BusiUrl+"/atomicCrashUpdate", map[string]interface{}{
 			"key":       DataKey,
 			"value":     data,
@@ -56,6 +49,9 @@ func init() {
 	BusiApp.POST(BusiAPI+"/atomicCrashUpdate", utils.WrapHandler(func(c *gin.Context) interface{} {
 		body := MustMapBodyFrom(c)
 		mode := body["mode"].(string)
+		if mode != "normal" && mode != "dtm" {
+			return errors.New("mode should be normal or dtm")
+		}
 		row := &DBRow{
 			K:        body["key"].(string),
 			V:        body["value"].(string),
@@ -68,7 +64,10 @@ func init() {
 				DeleteCacheValue(body["key"].(string))
 			} else {
 				msg := dtmcli.NewMsg(DtmServer, shortuuid.New()).
-					Add(BusiUrl+"/deleteKey", &Req{Key: rdbKey})
+					Add(BusiUrl+"/deleteCache", map[string]interface{}{
+						"key":  body["key"].(string),
+						"mode": mode,
+					})
 				msg.TimeoutToFail = 3
 				err := msg.DoAndSubmit(BusiUrl+"/queryPrepared", func(bb *dtmcli.BranchBarrier) error {
 					err := bb.CallWithDB(db, func(tx *sql.Tx) error {

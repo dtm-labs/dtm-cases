@@ -30,9 +30,21 @@
 - 对于mode=rockscache，虽然遇见了网络延时，但是最终缓存中的版本是v2，与数据库中的一致
 ### 保证原子性
 - 发起一个普通更新数据请求，模拟crash，导致DB与缓存不一致 `curl http://localhost:8081/api/busi/atomic?mode=none`
-- 发起一个通过dtm更新数据请求，模拟crash，导致DB与缓存不一致，但是5s后，DB与缓存恢复一致 `curl http://localhost:8081/api/busi/atomic?mode=dtm`crash=1`
+- 发起一个通过dtm更新数据请求，模拟crash，导致DB与缓存不一致，但是5s后，DB与缓存恢复一致 `curl http://localhost:8081/api/busi/atomic?mode=dtm`
+
+可以看到通过dtm更新缓存，在发生进程crash的情况下，也能够保证更新DB和缓存同时成功，或者同时失败。
+
+这个例子也演示了dtm不仅可以和rockscache组合使用，也可以独立于rockscache使用，架构方案会比本地消息表、事务消息、binlog监听的这些架构更加简单
 
 ### 强一致访问
+rockscache+dtm 也能够提供强一致的访问，访问方式不变，仅需要对rockscache的client设置`StringConsistency`选项
+
+发起一个演示强一致访问的子 `curl http://localhost:8081/api/busi/strong`，该例子会做以下事情
+1. 初始化数据，包括数据库和缓存
+2. 采用dtm二阶段消息方式更新数据，保证DB与缓存操作的原子性，其中缓存数据需要3s计算时间
+3. 在缓存更新完成前，查询全局事务状态，状态为未完成。（如果用户查询业务结果，即使DB更新完成，只要全局事务未完成，都要告知用户未完成）
+3. 查询缓存，在强一致的访问模式下，该查询会等待2中的结果，与最终一致不同
+
 
 #### 强一致访问用例
 代码主要在demo/api-strong，例子主要演示了强一致访问升降级的各种特性，通过下面代码运行强一致访问的测试用例

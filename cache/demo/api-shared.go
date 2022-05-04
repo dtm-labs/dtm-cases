@@ -10,9 +10,10 @@ import (
 func init() {
 
 	BusiApp.POST(BusiAPI+"/deleteKey", utils.WrapHandler(func(c *gin.Context) interface{} {
-		req := MustReqFrom(c)
-		logger.Infof("deleting key: %s", req.Key)
-		_, err := rdb.Del(rdb.Context(), req.Key).Result()
+		body := MustMapBodyFrom(c)
+		key := body["key"].(string)
+		logger.Infof("deleting key: %s", key)
+		_, err := rdb.Del(rdb.Context(), key).Result()
 		return err
 	}))
 	BusiApp.GET(BusiAPI+"/queryPrepared", utils.WrapHandler(func(c *gin.Context) interface{} {
@@ -21,10 +22,6 @@ func init() {
 			err = bb.QueryPrepared(db)
 		}
 		return err
-	}))
-	BusiApp.POST(BusiAPI+"/delayDeleteKey", utils.WrapHandler(func(c *gin.Context) interface{} {
-		req := MustReqFrom(c)
-		return dc.DelayDelete(req.Key)
 	}))
 	BusiApp.POST(BusiAPI+"/deleteCache", utils.WrapHandler(func(c *gin.Context) interface{} {
 		body := MustMapBodyFrom(c)

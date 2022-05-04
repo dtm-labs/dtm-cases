@@ -33,40 +33,6 @@ func init() {
 	logger.FatalIfError(err)
 }
 
-// Req is request
-type Req struct {
-	Key    string `json:"key"`
-	Value  string `json:"value"`
-	Expire int64  `json:"expire"`
-}
-
-// MustReqFrom gin.Context to Req
-func MustReqFrom(c *gin.Context) *Req {
-	var req Req
-	err := c.BindJSON(&req)
-	logger.FatalIfError(err)
-	return &req
-}
-
-func updateDB(value string) {
-	_, err := db.Exec("insert into cache1.t1(id, value) values(?, ?) on duplicate key update value=values(value)", dbKey, value)
-	logger.FatalIfError(err)
-	logger.Infof("update db: %s", value)
-}
-
-func updateInTx(tx *sql.Tx, value string) error {
-	_, err := tx.Exec("insert into cache1.t1(id, value) values(?, ?) on duplicate key update value=values(value)", dbKey, value)
-	logger.Infof("updateInTx: %s", value)
-	return err
-}
-
-func getDB() (string, error) {
-	var value string
-	err := db.QueryRow("select value from cache1.ver where id=?", dbKey).Scan(&value)
-	logger.Infof("get db: %s, %v", value, err)
-	return value, err
-}
-
 func clearData() {
 	err := rdb.Del(rdb.Context(), DataKey).Err()
 	logger.FatalIfError(err)
@@ -74,19 +40,13 @@ func clearData() {
 	logger.FatalIfError(err)
 }
 
-func obtainValue() string {
-	v, err := rdb.Get(rdb.Context(), rdbKey).Result()
-	if err == redis.Nil {
-		value, err := getDB()
-		logger.FatalIfError(err)
-		_, err = rdb.Set(rdb.Context(), rdbKey, value, 0).Result()
-		logger.FatalIfError(err)
-		logger.Infof("obtainValue: %s", value)
-		return value
-	}
-	logger.FatalIfError(err)
-	logger.Infof("obtainValue: %s", v)
-	return v
+func initData(key string, value string, mode string) {
+	SetCacheValue(key, value, mode)
+	SetDBValue(&DBRow{
+		K:        key,
+		V:        value,
+		TimeCost: "",
+	})
 }
 
 func ensure(condition bool, format string, v ...interface{}) {
@@ -111,6 +71,14 @@ type DBRow struct {
 func Post(url string, body map[string]interface{}) *resty.Response {
 	logger.Infof("posting: %s, %s", url, body)
 	r, err := resty.New().R().SetBody(body).Post(url)
+	logger.FatalIfError(err)
+	logger.FatalfIf(r.StatusCode() != 200, "post failed: %s", r.String())
+	return r
+}
+
+func Get(url string) *resty.Response {
+	logger.Infof("getting: %s, %s", url)
+	r, err := resty.New().R().Get(url)
 	logger.FatalIfError(err)
 	logger.FatalfIf(r.StatusCode() != 200, "post failed: %s", r.String())
 	return r
