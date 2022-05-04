@@ -3,7 +3,7 @@ module github.com/dtm-labs/dtm-cases/utils
 go 1.17
 
 require (
-	github.com/dtm-labs/dtmcli v1.13.4
+	github.com/dtm-labs/dtmcli v1.13.5
 	github.com/gin-gonic/gin v1.7.7
 )
 

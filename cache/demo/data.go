@@ -41,6 +41,7 @@ func clearData() {
 }
 
 func initData(key string, value string, mode string) {
+	clearData()
 	SetCacheValue(key, value, mode)
 	SetDBValue(&DBRow{
 		K:        key,

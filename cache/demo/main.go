@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dtm-labs/dtmcli/logger"
+	"github.com/dtm-labs/rockscache"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -19,11 +20,9 @@ var BusiUrl = fmt.Sprintf("http://localhost:%d%s", BusiPort, BusiAPI)
 
 var BusiApp = gin.Default()
 
-func init() {
-	gin.SetMode(gin.ReleaseMode)
-}
-
 func Main() {
+	gin.SetMode(gin.ReleaseMode)
+	rockscache.SetVerbose(true)
 	logger.InitLog("debug")
 	startSvr()
 	time.Sleep(200 * time.Millisecond)
