@@ -14,6 +14,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/dtm-labs/dtm-cases/utils v0.0.0-20220429140600-dc1742740428/go.mod h1:QoCwO+/mu99N+RqRCQZ6KuL3qOzcsZ20QuWAUCHHLb8=
+github.com/dtm-labs/dtm-cases/utils v0.0.0-20220504132924-8659286f9d95 h1:Z5c6IFY6ho5CxMf+NpPYO0gu/KltmFDJWTgxHHm7ADo=
+github.com/dtm-labs/dtm-cases/utils v0.0.0-20220504132924-8659286f9d95/go.mod h1:LjLg4iFKqKB+sO50cdkOqo7oBPxasCjilK4Pifqw5FQ=
 github.com/dtm-labs/dtmcli v1.13.5 h1:LjAPy+K/t+tEC8NMPLqD4BoYWWL6AYODKY7htkFp2k8=
 github.com/dtm-labs/dtmcli v1.13.5/go.mod h1:otEdxUwM5FIKlCLmg5hL5+Z539DmCK2YJ0G4WNsP6Tw=
 github.com/dtm-labs/dtmdriver v0.0.3 h1:9iAtvXKR3lJXQ7dvS87e4xdtmqkzN+ofek+CF9AvUSY=

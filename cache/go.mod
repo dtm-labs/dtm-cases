@@ -3,7 +3,7 @@ module github.com/dtm-labs/dtm-cases/cache
 go 1.17
 
 require (
-	github.com/dtm-labs/dtm-cases/utils v0.0.0-20220429140600-dc1742740428
+	github.com/dtm-labs/dtm-cases/utils v0.0.0-20220504132924-8659286f9d95
 	github.com/dtm-labs/dtmcli v1.13.5
 	github.com/dtm-labs/rockscache v0.0.2
 	github.com/gin-gonic/gin v1.7.7
