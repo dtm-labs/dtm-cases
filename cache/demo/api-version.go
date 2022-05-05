@@ -87,9 +87,9 @@ func init() {
 				return row.V, nil
 			}
 			if mode == "rockscache" {
-				_, _ = dc.Fetch(body["key"].(string), 300, fetch)
+				_, _ = dc.Fetch(body["key"].(string), 300*time.Second, fetch)
 			} else {
-				_, _ = NormalFetch(body["key"].(string), 300, fetch)
+				_, _ = NormalFetch(body["key"].(string), 300*time.Second, fetch)
 			}
 
 		}()
