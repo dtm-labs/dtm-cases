@@ -69,6 +69,3 @@ The code explains the following.
 - The switch not to read cache is in effect for all applications, where all reads are DB only
 - Turn off the write cache switch
 - The switch not to write cache is in effect for all applications, when the cache is no longer being used and can be taken offline
-
-
-Translated with www.DeepL.com/Translator (free version)
