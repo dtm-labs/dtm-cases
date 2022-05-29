@@ -29,7 +29,7 @@ func init() {
 		if mode == "delete" {
 			return rdb.Del(rdb.Context(), body["key"].(string))
 		} else {
-			return dc.DelayDelete(body["key"].(string))
+			return dc.TagAsDeleted(body["key"].(string))
 		}
 	}))
 }
