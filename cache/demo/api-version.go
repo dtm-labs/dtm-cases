@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"time"
-
+	"github.com/dtm-labs/rockscache"
 	"github.com/dtm-labs/dtm-cases/utils"
 	"github.com/dtm-labs/dtmcli"
 	"github.com/dtm-labs/dtmcli/logger"
@@ -39,19 +39,12 @@ func init() {
 			"time_cost": "5ms",
 			"mode":      mode,
 		})
-		// for mode == delete, trigger a query using time_cost 5ms
-		// for mode == rockscache, the query is filtered by singleflight
+		// trigger a query using time_cost 5ms
 		_ = Post(BusiUrl+"/versionQueryDataAsync", map[string]interface{}{
 			"key":  DataKey,
 			"mode": mode,
 		})
 		time.Sleep(2500 * time.Millisecond)
-		// for mode == rockscache, trigger another query to update the cache by newest data v2
-		_ = Post(BusiUrl+"/versionQueryDataAsync", map[string]interface{}{
-			"key":  DataKey,
-			"mode": mode,
-		})
-		time.Sleep(500 * time.Millisecond)
 
 		logger.Debugf("after all operations, get result data")
 		dbv := GetDBValue(DataKey)
@@ -61,7 +54,7 @@ func init() {
 			ensure(cachev == "v1", "cache value should be v1")
 			logger.Infof("for mode delete, db value is: %s, cache value is: %s, not matched", dbv, cachev)
 		} else {
-			ensure(cachev == "v1", "cache value should be v1")
+			ensure(cachev == "v2", "cache value should be v2")
 			logger.Infof("for mode rockscache, db value is: %s, cache value is: %s, matched", dbv, cachev)
 		}
 		return "ok"
@@ -99,7 +92,9 @@ func init() {
 				return row.V, nil
 			}
 			if mode == "rockscache" {
-				_, _ = dc.Fetch(body["key"].(string), 300*time.Second, fetch)
+				// new a client to avoid singleflight lock
+				ndc := rockscache.NewClient(rdb, rockscache.NewDefaultOptions())
+				_, _ = ndc.Fetch(body["key"].(string), 300*time.Second, fetch)
 			} else {
 				_, _ = NormalFetch(body["key"].(string), 300*time.Second, fetch)
 			}
