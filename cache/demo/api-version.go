@@ -20,29 +20,40 @@ func init() {
 			return errors.New("mode should be delete or rockscache")
 		}
 		data := "v1"
-		_ = Post(BusiUrl+"/versionUpdateData", map[string]interface{}{
+		_ = Post(BusiUrl+"/versionUpdateDataSync", map[string]interface{}{
 			"key":       DataKey,
 			"value":     data,
 			"time_cost": "2s",
 			"mode":      mode,
 		})
-		_ = Post(BusiUrl+"/versionQueryData", map[string]interface{}{
+		// trigger a query using time_cost 2s
+		_ = Post(BusiUrl+"/versionQueryDataAsync", map[string]interface{}{
 			"key":  DataKey,
 			"mode": mode,
 		})
 		data = "v2"
 		time.Sleep(200 * time.Millisecond)
-		_ = Post(BusiUrl+"/versionUpdateData", map[string]interface{}{
+		_ = Post(BusiUrl+"/versionUpdateDataSync", map[string]interface{}{
 			"key":       DataKey,
 			"value":     data,
 			"time_cost": "5ms",
 			"mode":      mode,
 		})
-		_ = Post(BusiUrl+"/versionQueryData", map[string]interface{}{
+		// for mode == delete, trigger a query using time_cost 5ms
+		// for mode == rockscache, the query is filtered by singleflight
+		_ = Post(BusiUrl+"/versionQueryDataAsync", map[string]interface{}{
 			"key":  DataKey,
 			"mode": mode,
 		})
 		time.Sleep(2500 * time.Millisecond)
+		// for mode == rockscache, trigger another query to update the cache by newest data v2
+		_ = Post(BusiUrl+"/versionQueryDataAsync", map[string]interface{}{
+			"key":  DataKey,
+			"mode": mode,
+		})
+		time.Sleep(500 * time.Millisecond)
+
+		logger.Debugf("after all operations, get result data")
 		dbv := GetDBValue(DataKey)
 		cachev := GetCacheValue(DataKey, mode)
 		ensure(dbv.V == "v2", "db value should be v2")
@@ -55,7 +66,7 @@ func init() {
 		}
 		return "ok"
 	}))
-	BusiApp.POST(BusiAPI+"/versionUpdateData", utils.WrapHandler(func(c *gin.Context) interface{} {
+	BusiApp.POST(BusiAPI+"/versionUpdateDataSync", utils.WrapHandler(func(c *gin.Context) interface{} {
 		body := MustMapBodyFrom(c)
 		gid := shortuuid.New()
 		msg := dtmcli.NewMsg(DtmServer, gid).
@@ -71,7 +82,7 @@ func init() {
 			})
 		})
 	}))
-	BusiApp.POST(BusiAPI+"/versionQueryData", utils.WrapHandler(func(c *gin.Context) interface{} {
+	BusiApp.POST(BusiAPI+"/versionQueryDataAsync", utils.WrapHandler(func(c *gin.Context) interface{} {
 		body := MustMapBodyFrom(c)
 		mode := body["mode"].(string)
 		go func() {
@@ -80,10 +91,11 @@ func init() {
 				if row.TimeCost != "" {
 					duration, err := time.ParseDuration(row.TimeCost)
 					logger.FatalIfError(err)
-					logger.Debugf("before sleep %s, return %s", duration, row.V)
+					logger.Debugf("before sleep %s, row.V: %s", duration, row.V)
 					time.Sleep(duration)
-					logger.Debugf("after sleep %s, return %s", duration, row.V)
+					logger.Debugf("after sleep %s, row.V: %s", duration, row.V)
 				}
+				logger.Debugf("returning row.V: %s", row.V)
 				return row.V, nil
 			}
 			if mode == "rockscache" {
