@@ -7,7 +7,7 @@ This page can be read in conjunction with [Caching Applications](https://en.dtm.
 This project demonstrates how [dtm-labs/rockscache](https://github.com/dtm-labs/rockscache) and [dtm-labs/dtm](https://github.com/dtm-labs/dtm) together can be used to maintain cache consistency, including the following
 - Ensuring eventual consistency: demonstrates how rockscache can ensure the consistency between cache and DB
 - Ensuring atomic operations: if a process crashes after updating the DB, the cache can still be updated
-- Other features of cache management: demonstrates a delayed-delete cache management method that is anti-penastration, anti-breakdown and anti-avalanche
+- Other features of cache management: demonstrates a delayed-delete cache management method that is anti-penetration, anti-breakdown and anti-avalanche
 - Strong consistency usage: demonstrates how to provide strong consistency to application
 - Strong Consistency in Upgrades and Downgrades: provide strong consistency to application even if the cache is being downgraded and upgraded
 
@@ -46,11 +46,11 @@ Launch an example demonstrating strong consistent access `curl http://localhost:
 4. query cache, in strong consistent access mode, this query will wait for the result in 2, different from the eventual consistency
 
 
-### Strong Consistency on Downgrading and Updagrading
+### Strong Consistency on Downgrading and Upgrading
 If strong consistency is also required for the short time window of downgrading and upgrading, rockscache+dtm can do also.
 
 Launch an example `curl http://localhost:8081/api/busi/downgrade` that demonstrates strong consistency even during downgrading and upgrading, which does the following:
-1. initialise the data, including the database and cache
+1. initialize the data, including the database and cache
 2. use dtm's Saga mode to update the data, ensuring atomicity for the three operations of locking the cache, updating the DB, and deleting the cache, in addition to the 3s computation time required for the cache data
 3. after updating the DB, before updating the cache, you can tell the user that the operation has been completed (different from the previous case of strong consistency, the condition is relaxed)
 4. query cache, in strong consistent access mode, the query will wait for the result in 2
