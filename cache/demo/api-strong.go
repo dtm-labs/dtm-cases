@@ -22,14 +22,13 @@ func init() {
 		data := "v2"
 		mode := "rockscache"
 		gid := shortuuid.New()
-		go Post(BusiUrl+"/strongUpdateData", map[string]interface{}{
+		Post(BusiUrl+"/strongUpdateData", map[string]interface{}{
 			"key":       DataKey,
 			"value":     data,
 			"mode":      mode,
 			"time_cost": "3s",
 			"gid":       gid,
 		})
-		time.Sleep(500 * time.Millisecond)
 		r := Get(BusiUrl + "/strongQueryProgress?gid=" + gid)
 		ensure(r.String() == "\"submitted\"", "business status has not finished")
 		v, err := strong.Fetch(DataKey, 300*time.Second, func() (string, error) {
@@ -54,7 +53,7 @@ func init() {
 		gid := body["gid"].(string)
 		msg := dtmcli.NewMsg(DtmServer, gid).
 			Add(BusiUrl+"/deleteCache", body)
-		msg.WaitResult = true // when return success, the global transaction has finished
+		msg.WaitResult = false // when return success, the global transaction has finished
 		return msg.DoAndSubmit(BusiUrl+"/queryPrepared", func(bb *dtmcli.BranchBarrier) error {
 			return bb.CallWithDB(db, func(tx *sql.Tx) error {
 				return UpdateInTx(tx, &DBRow{
